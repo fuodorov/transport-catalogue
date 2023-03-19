@@ -6,27 +6,26 @@
 #include <string>
 #include <string_view>
 
+constexpr double PI = 3.14159265358979323846;
+constexpr double EARTH_RADIUS = 6371000.0;
+constexpr double EPSILON = 1e-6;
+constexpr double DEG_TO_RAD = PI / 180.0;
+
 struct Coordinates {
     double lat = 0;
     double lng = 0;
 
-    static Coordinates ParseFromStringView(const std::string_view& string_coord) {
-        size_t start_pos = string_coord.find_first_not_of(' ');
-        size_t comma_pos = string_coord.find_first_of(',');
-        size_t start_pos_next = string_coord.find_first_not_of(' ', comma_pos + 1);
+    static Coordinates ParseFromStringView(const std::string_view& string_coord, const char delimiter = ',') {
+        size_t comma_pos = string_coord.find_first_of(delimiter);
         Coordinates coord;
-        coord.lat = std::stod(std::string(string_coord.substr(start_pos, comma_pos)));
-        coord.lng = std::stod(std::string(string_coord.substr(start_pos_next)));
+        coord.lat = std::stod(std::string(string_coord.substr(0, comma_pos)));
+        coord.lng = std::stod(std::string(string_coord.substr(comma_pos + 1)));
         return coord;
     }
 };
 
-inline bool InTheVicinity(const double d1, const double d2, const double delta = 1e-6) {
-    return abs(d1 - d2) < delta;
-}
-
 inline bool operator== (const Coordinates& lhs, const Coordinates& rhs) {
-    return InTheVicinity(lhs.lat, rhs.lat) && InTheVicinity(lhs.lng, rhs.lng);
+    return abs(lhs.lat - rhs.lat) < EPSILON && abs(lhs.lng - rhs.lng) < EPSILON;
 }
 
 inline bool operator!= (const Coordinates& lhs, const Coordinates& rhs) {
@@ -34,16 +33,10 @@ inline bool operator!= (const Coordinates& lhs, const Coordinates& rhs) {
 }
 
 inline std::ostream& operator<< (std::ostream& out, const Coordinates& coord) {
-    using namespace std::string_literals;
-    out << "<|"s << coord.lat << ", "s << coord.lng << "|>"s;
-    return out;
+    return out << "<|" << coord.lat << ", " << coord.lng << "|>";
 }
 
 inline double ComputeDistance(Coordinates from, Coordinates to) {
     using namespace std;
-    static const double dr = 3.1415926535 / 180.0;
-    static const double rz = 6371000.0;
-    return acos(
-        sin(from.lat * dr) * sin(to.lat * dr) +
-        cos(from.lat * dr) * cos(to.lat * dr) * cos(abs(from.lng - to.lng) * dr)) * rz;
+    return acos(sin(from.lat * DEG_TO_RAD) * sin(to.lat * DEG_TO_RAD) + cos(from.lat * DEG_TO_RAD) * cos(to.lat * DEG_TO_RAD) * cos(abs(from.lng - to.lng) * DEG_TO_RAD)) * EARTH_RADIUS;
 }
