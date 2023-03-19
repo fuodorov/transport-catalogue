@@ -29,13 +29,11 @@ void TestQueriesEngine(stringstream& input, stringstream& output) {
     QueriesEngine(input, result);
     string result_line, output_line;
     while (getline(result, result_line) && getline(output, output_line)) {
-        try {
-            assert(result_line == output_line);
-        } catch (const std::exception& e) {
+        if (result_line != output_line) {
             cout << "TestQueriesEngine failed" << endl;
-            cout << "result: " << result_line << endl;
-            cout << "output: " << output_line << endl;
-            throw e;
+            cout << "Expected: " << output_line << endl;
+            cout << "Actual: " << result_line << endl;
+            return;
         }
     }
     cout << "TestQueriesEngine OK" << endl;

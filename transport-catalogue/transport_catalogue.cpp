@@ -73,9 +73,9 @@ namespace transport_catalogue {
             static const char* str_sep = ": ";
             static const char* str_comma = ", ";
             static const char* str_space = " ";
-            static const char* str_stops_on_route = "stops on routee";
+            static const char* str_stops_on_route = "stops on route";
             static const char* str_unique_stops = "unique stops";
-            static const char* str_routee_lenght = "routee length";
+            static const char* str_route_lenght = "route length";
             static const char* str_curvature = "curvature";
 
             double curvature = bus.route_true_lenght / bus.route_lenght;
@@ -83,7 +83,7 @@ namespace transport_catalogue {
             out << str_bus << bus.name << str_sep;
             out << bus.stops_on_route << str_space << str_stops_on_route << str_comma;
             out << bus.unique_stops << str_space << str_unique_stops << str_comma;
-            out << std::setprecision(6) << bus.route_true_lenght << str_space << str_routee_lenght << str_comma;
+            out << std::setprecision(6) << bus.route_true_lenght << str_space << str_route_lenght << str_comma;
             out << std::setprecision(6) << curvature << str_space << str_curvature;
 
             return out;
