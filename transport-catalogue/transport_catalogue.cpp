@@ -23,7 +23,7 @@ namespace transport_catalogue {
         }
 
         const Stop* Catalogue::Push(std::string&& name, std::string&& string_coord) {
-            stops_.push_back({ std::move(name), Coordinates::ParseFromStringView(string_coord) });
+            stops_.push_back({ std::move(name), Coordinates::ParseCoordinates(string_coord) });
             stop_buses_.insert({ &stops_.back(), {} });
             return &stops_.back();
         }
