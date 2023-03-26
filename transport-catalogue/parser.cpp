@@ -39,26 +39,18 @@ namespace catalogue::parser {
         return result;
     }
 
-    std::pair<catalogue::Stop, bool> ParseBusStop(const std::string& text) {
-        //! Input format without stops info: Stop X: latitude, longitude
-        //! Input format with stops info: Stop X: latitude, longitude, D1m to stop1, D2m to stop2, ...
-
+    std::pair<catalogue::Stop, bool> ParseBusStopCoordinates(const std::string& text) {
         Stop stop;
 
-        size_t stop_begin = ("Stop "s).size();
-        size_t stop_end = text.find(": "s, stop_begin);
-        stop.name = text.substr(stop_begin, stop_end - stop_begin);
+        std::regex stop_regex(R"(Stop ([\w ]+)?: ([\d.]+), ([\d.]+)(, [\d.]+m to [\w ]+)*$)");
+        std::smatch match;
+        std::regex_match(text, match, stop_regex);
+        
+        stop.name = match[1];
+        stop.point.lat = std::stod(match[2]);
+        stop.point.lng = std::stod(match[3]);
 
-        size_t latitude_begin = stop_end + (": "s).size();
-        size_t latitude_end = text.find(","s, latitude_begin);
-        stop.point.lat = std::stod(text.substr(latitude_begin, latitude_end - latitude_begin));
-
-        size_t longitude_begin = latitude_end + (", "s).size();
-        size_t longitude_end = text.find(","s, longitude_begin);
-        stop.point.lng = std::stod(text.substr(longitude_begin, longitude_end - longitude_begin));
-
-        bool has_stops_info = longitude_end != std::string_view::npos;
-        return {std::move(stop), has_stops_info};
+        return {std::move(stop), match[4].matched};
     }
 
     Bus ParseBusRoute(std::string_view text) {
@@ -101,7 +93,7 @@ namespace catalogue::parser {
         for (int id = 0; id < queries_count; ++id) {
             std::getline(input_stream, query);
             if (query.substr(0, 4) == "Stop"s) {
-                auto [stop, is_store_query] = ParseBusStop(query);
+                auto [stop, is_store_query] = ParseBusStopCoordinates(query);
                 if (is_store_query)
                     stop_distances.emplace_back(stop.name, std::move(query));
                 catalogue.AddStop(std::move(stop));
