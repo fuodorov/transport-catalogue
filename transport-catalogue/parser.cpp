@@ -13,27 +13,20 @@ namespace catalogue::parser {
         return text.substr(word_end + (" "sv).size(), text.size() - word_end);
     }
 
-    DistancesToStops ParseDistances(std::string_view text) {
-        //! Input format: Stop X: latitude, longitude, D1m to stop1, D2m to stop2, ...
-
+    DistancesToStops ParseBusStopDistances(std::string_view text) {
         DistancesToStops result;
 
-        // Looking for the second ',' in a row
-        size_t start = text.find(',');
-        start = text.find(',', start + 1) + (" "sv).size();
-        size_t end = start;
-
-        while (start != std::string_view::npos) {
-            end = text.find("m"sv, start);
-            int distance = std::stoi(std::string(text.substr(start, end - start)));
-
-            start = end + ("m to "sv).size();
-            end = text.find(","sv, start);
-
-            std::string_view stop_to = text.substr(start, end - start);
+        std::regex distance_regex(R"(, ([\d.]+)m to ([\w ]+))");
+        std::smatch match;
+        std::string text_copy = text.data();
+        
+        int math_initial_position = 0;
+        while (std::regex_search(text_copy, match, distance_regex)) {
+            std::string_view stop_to = text.substr(math_initial_position + match.position(2), match.length(2));
+            int distance = std::stoi(std::string(match[1]));
             result.emplace_back(stop_to, distance);
-
-            start = (end == std::string_view::npos) ? end : end + (" "sv).size();
+            text_copy = match.suffix();
+            math_initial_position += match.position(0) + match.length(0);
         }
 
         return result;
@@ -103,7 +96,7 @@ namespace catalogue::parser {
         }
 
         for (const auto& [stop_from, query] : stop_distances) {
-            for (auto [stop_to, distance] : ParseDistances(query))
+            for (auto [stop_to, distance] : ParseBusStopDistances(query))
                 catalogue.AddDistance(stop_from, stop_to, distance);
         }
 
