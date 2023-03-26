@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#include "transport_catalogue.h"
+#include "catalogue.h"
 
 namespace catalogue::parser {
     std::string_view ParseBusStatistics(std::string_view text);
