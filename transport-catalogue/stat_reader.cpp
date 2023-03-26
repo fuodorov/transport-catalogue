@@ -1,40 +1,44 @@
-#include <algorithm>
+//
+// Created by azakharov on 6/17/2021.
+//
 
 #include "stat_reader.h"
 
-void OutputQuery(const transport_catalogue::TransportCatalogue& transport_catalogue, const std::string& query, std::ostream& out) {
-    size_t space_pos = query.find_first_of(' ');
-    std::string type = query.substr(0, space_pos);
-    std::string name = query.substr(space_pos + 1);
-    
-    if (type == std::string("Bus")) {
-        auto [info, is_found] = transport_catalogue.GetBus(name);
+#include <cassert>
+#include <iomanip>
 
-        if (is_found) {
-            out << *(*info).second << std::endl;
-        }
-        else {
-            out << std::string("Bus ") << name << std::string(": not found") << std::endl;
-        }
-    }
-    else if (type == std::string("Stop")) {
-        using namespace transport_catalogue::stop_catalogue;
+namespace catalog::output_utils {
 
-        auto [info, is_found] = transport_catalogue.GetBusesForStop(name);
+using namespace std::literals;
 
-        if (is_found) {
-            if (!info.empty()) {
-                out << std::string("Stop ") << name << std::string(": buses ") << info << std::endl;
-            }
-            else {
-                out << std::string("Stop ") << name << std::string(": no buses") << std::endl;
-            }
+std::string_view ParseBusStatisticsRequest(std::string_view text) {
+    //! Input: Bus BusNumber
+    size_t bus_begin = text.find(" "sv) + (" "sv).size();
+    return text.substr(bus_begin, text.size() - bus_begin);
+}
+
+std::string_view ParseBusesPassingThroughStopRequest(std::string_view text) {
+    //! Input: Stop StopName
+    size_t stop_begin = text.find(" "sv) + (" "sv).size();
+    return text.substr(stop_begin, text.size() - stop_begin);
+}
+
+void PrintBusesPassingThroughStop(std::ostream& os, std::string_view stop_name,
+                                  const std::set<std::string_view>* buses) {
+    if (!buses) {
+        os << "Stop " << stop_name << ": not found" << std::endl;
+    } else if (buses->empty()) {
+        os << "Stop " << stop_name << ": no buses" << std::endl;
+    } else {
+        os << "Stop " << stop_name << ": buses ";
+        size_t index{0u};
+        for (std::string_view bus : *buses) {
+            if (index++ != 0)
+                os << " ";
+            os << bus;
         }
-        else {
-            out << std::string("Stop ") << name << std::string(": not found") << std::endl;
-        }
-    }
-    else {
-        throw std::invalid_argument("Unknown query type: " + type);
+        os << std::endl;
     }
 }
+
+}  // namespace catalog::output_utils

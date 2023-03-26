@@ -1,13 +1,18 @@
 #pragma once
 
-#include <istream>
+#include <iostream>
 #include <string>
-#include <vector>
 
 #include "transport_catalogue.h"
 
-std::string ReadLine(std::istream& input);
+namespace catalog::input_utils {
 
-int ReadLineWithNumber(std::istream& input);
+DistancesToStops ParsePredefinedDistancesBetweenStops(std::string_view text);
 
-void InputQueries(transport_catalogue::TransportCatalogue& transport_catalogue, const std::vector<std::string>& queries);
+std::pair<catalog::Stop, bool> ParseBusStopInput(const std::string& text);
+
+catalog::Bus ParseBusRouteInput(std::string_view text);
+
+void ParseTransportCatalogueQueries(std::istream& input_stream);
+
+}  // namespace catalog::input_utils

@@ -1,182 +1,92 @@
 #pragma once
 
-#include <algorithm>
 #include <deque>
-#include <functional>
-#include <iostream>
-#include <ostream>
+#include <list>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "geo.h"
 
-namespace transport_catalogue {
+using DistancesToStops = std::vector<std::pair<std::string_view, int>>;
 
-    enum class RouteType {
-        Direct,
-        BackAndForth,
-        Round
-    };
+namespace catalog {
 
-    namespace detail {
+enum class RouteType { CIRCLE, TWO_DIRECTIONAL };
 
-        template <typename VirtualStruct>
-        class VirtualCatalogue {
-            using ConstIterator = typename std::unordered_map<std::string_view, const VirtualStruct*>::const_iterator;
-            using VirtualPair = std::pair<ConstIterator, bool>;
-        public:
-            VirtualCatalogue() = default;
+struct Bus {
+    std::string number;
+    RouteType type;
+    std::vector<std::string_view> stop_names;
+    std::set<std::string_view> unique_stops;
 
-            VirtualPair At(const std::string_view& name) const {
-                auto it = data_.find(name);
-                return std::make_pair(it, (it == data_.end() ? false : true));
-            }
+    [[nodiscard]] size_t GetStopsCount() const;
+};
 
-            VirtualPair Push(const std::string_view& name, const VirtualStruct* data) {
-                return data_.emplace(name, data);
-            }
-        private:
-            std::unordered_map<std::string_view, const VirtualStruct*> data_;
-        };
+struct Stop {
+    std::string name;
+    geo::Coordinates point;
 
-        template <typename Pointer>
-        using PointerPair = std::pair<const Pointer*, const Pointer*>;
-
-        template <typename Pointer>
-        class PointerPairHasher {
-        public:
-            size_t operator() (const PointerPair<Pointer>& stop_pair) const {
-                return hasher_(stop_pair.first) * 47 + hasher_(stop_pair.second);
-            }
-        private:
-            std::hash<const Pointer*> hasher_;
-        };
-
+    [[nodiscard]] size_t Hash() const {
+        return std::hash<std::string>{}(name) + even_value * std::hash<double>{}(point.lng) +
+               even_value * even_value * std::hash<double>{}(point.lat);
     }
 
-    namespace stop_catalogue {
+private:
+    static const size_t even_value{37};
+};
 
-        struct Stop {
-            std::string name;
-            Coordinates coord;
+using StopPointersPair = std::pair<const Stop*, const Stop*>;
 
-            bool operator== (const Stop* other) const {
-                return name == other->name;
-            }
-        };
+struct BusStatistics {
+    std::string_view number;
+    size_t stops_count{0u};
+    size_t unique_stops_count{0u};
+    int rout_length{0};
+    double curvature{0.};
+};
 
-        using BusesToStopNames = std::set<std::string_view>;
-        using DistancesContainer = std::unordered_map<detail::PointerPair<Stop>, double, detail::PointerPairHasher<Stop>>;
+std::ostream& operator<<(std::ostream& os, const BusStatistics& statistics);
 
-        std::ostream& operator<< (std::ostream& out, const BusesToStopNames& buses);
+class TransportCatalogue {
+public:  // Constructors
+    TransportCatalogue() = default;
 
-        class Catalogue {
-        public:
-            Catalogue() = default;
+public:  // Methods
+    void AddStop(Stop stop);
+    void AddBus(Bus bus);
+    void AddDistance(std::string_view stop_from, std::string_view stop_to, int distance);
 
-            const Stop* Push(std::string&& name, std::string&& string_coord);
+    [[nodiscard]] std::optional<BusStatistics> GetBusStatistics(std::string_view bus_number) const;
+    [[nodiscard]] const std::set<std::string_view>* GetBusesPassingThroughTheStop(std::string_view stop_name) const;
 
-            void PushBusToStop(const Stop* stop, const std::string_view& bus_name);
-
-            void AddDistance(const Stop* stop_1, const Stop* stop_2, double distance);
-
-            const std::set<std::string_view>& GetBuses(const Stop* stop) const {
-                return stop_buses_.at(stop);
-            }
-
-            const DistancesContainer& GetDistances() const {
-                return distances_between_stops_;
-            }
-
-        private:
-            std::deque<Stop> stops_ = {};
-            std::unordered_map<const Stop*, BusesToStopNames> stop_buses_ = {};
-            DistancesContainer distances_between_stops_ = {};
-        };
-
-    }
-
-    namespace bus_catalogue {
-
-        struct Bus {
-            std::string name = {};
-            std::deque<const stop_catalogue::Stop*> route = {};
-            RouteType route_type = RouteType::Direct;
-            double route_lenght = 0.0;
-            double route_true_lenght = 0.0;
-            size_t stops_on_route = 0;
-            size_t unique_stops = 0;
-
-            Bus() = default;
-
-            Bus(std::string&& name, std::deque<const stop_catalogue::Stop*>&& route, double route_lenght, double route_true_lenght, RouteType route_type);
-        };
-
-        std::ostream& operator<< (std::ostream& out, const Bus& bus);
-
-        class Catalogue {
-        public:
-            Catalogue() = default;
-
-            const Bus* Push(std::string&& name, std::vector<std::string_view>&& string_route, RouteType type,
-                const detail::VirtualCatalogue<stop_catalogue::Stop>& stops_catalogue, const stop_catalogue::DistancesContainer& stops_distances);
-
-        private:
-            double CalcRouteGeoLenght(const std::deque<const stop_catalogue::Stop*>& route, RouteType route_type);
-            double CalcRouteTrueLenght(const std::deque<const stop_catalogue::Stop*>& route, const stop_catalogue::DistancesContainer& stops_distances, RouteType route_type);
-
-        private:
-            std::deque<Bus> buses_ = {};
-        };
-
-    }
-
-    class TransportCatalogue {
-    public:
-        TransportCatalogue() = default;
-
-        void AddBus(std::string&& name, std::vector<std::string_view>&& route, RouteType type) {
-            const bus_catalogue::Bus* bus = buses_.Push(std::move(name), std::move(route), type, virtual_stops_, stops_.GetDistances());
-            virtual_buses_.Push(bus->name, bus);
-
-            for (const stop_catalogue::Stop* stop : bus->route) {
-                stops_.PushBusToStop(stop, bus->name);
-            }
-        }
-
-        void AddStop(std::string&& name, std::string&& string_coord) {
-            const stop_catalogue::Stop* stop = stops_.Push(std::move(name), std::move(string_coord));
-            virtual_stops_.Push(stop->name, stop);
-        }
-
-        auto GetBus(const std::string_view& name) const {
-            return virtual_buses_.At(name);
-        }
-
-        std::pair<std::set<std::string_view>, bool> GetBusesForStop(const std::string_view& name) const {
-            static const std::set<std::string_view> empty_set = {};
-            auto [it, stop_has_been_found] = virtual_stops_.At(name);
-            return (stop_has_been_found)
-                ? std::make_pair(stops_.GetBuses((*it).second), stop_has_been_found)
-                : std::make_pair(empty_set, stop_has_been_found);
-        }
-
-        void AddDistanceBetweenStops(const std::string_view& stop_from_name, const std::string_view& stop_to_name, double distance) {
-            auto [stop_from_it, fist_stop_found] = virtual_stops_.At(stop_from_name);
-            auto [stop_to_it, second_stop_found] = virtual_stops_.At(stop_to_name);
-            stops_.AddDistance((*stop_from_it).second, (*stop_to_it).second, distance);
+private:  // Types
+    struct StopPointersPairHash {
+        size_t operator()(const StopPointersPair& pair) const {
+            return pair.first->Hash() + prime_number * pair.second->Hash();
         }
 
     private:
-        bus_catalogue::Catalogue buses_;
-        detail::VirtualCatalogue<bus_catalogue::Bus> virtual_buses_;
-
-        stop_catalogue::Catalogue stops_;
-        detail::VirtualCatalogue<stop_catalogue::Stop> virtual_stops_;
+        static const size_t prime_number{31};
     };
 
-}
+private:  // Methods
+    int CalculateRouteLength(const Bus* bus_info) const;
+    double CalculateGeographicLength(const Bus* bus_info) const;
+
+private:  // Fields
+    std::deque<Stop> stops_storage_;
+    std::unordered_map<std::string_view, const Stop*> stops_;
+
+    std::deque<Bus> buses_storage_;
+    std::unordered_map<std::string_view, const Bus*> buses_;
+
+    std::unordered_map<std::string_view, std::set<std::string_view>> buses_through_stop_;
+    std::unordered_map<StopPointersPair, int, StopPointersPairHash> distances_between_stops_;
+};
+
+}  // namespace catalog
