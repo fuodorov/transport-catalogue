@@ -2,17 +2,18 @@
 
 #include <cmath>
 
+#include "constants.h"
+
 namespace catalogue::geo {
     struct Coordinates {
-        double lat{0.};
-        double lng{0.};
+        double lat, lng;
     };
 
     inline double ComputeDistance(Coordinates from, Coordinates to) {
+        using namespace catalogue::constants;
         using namespace std;
-        static const double dr = 3.1415926535 / 180.;
-        return acos(sin(from.lat * dr) * sin(to.lat * dr) +
-                    cos(from.lat * dr) * cos(to.lat * dr) * cos(abs(from.lng - to.lng) * dr)) *
-            6371000;
+        return EARTH_RADIUS * acos(sin(from.lat * DEG_TO_RAD) * sin(to.lat * DEG_TO_RAD) +
+                                   cos(from.lat * DEG_TO_RAD) * cos(to.lat * DEG_TO_RAD) *
+                                       cos(abs(from.lng - to.lng) * DEG_TO_RAD));
     }
 }  // namespace catalogue::geo
