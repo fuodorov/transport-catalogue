@@ -6,12 +6,10 @@
 
 namespace catalogue {
 
-    std::ostream& operator<<(std::ostream& os, const BusStat& bus_info) {
-        os << "Bus " << bus_info.number << ": " << bus_info.stops_count << " stops on route, "
-        << bus_info.unique_stops_count << " unique stops, ";
-        os << bus_info.route_length << " route length, ";
-        os << std::setprecision(6) << bus_info.curvature << " curvature";
-        return os;
+    std::ostream& operator<<(std::ostream& os, const BusStat& bus) {
+        return os << "Bus " << bus.number << ": " << bus.stops_count << " stops on route, "
+                  << bus.unique_stops_count << " unique stops, " << bus.route_length << " route length, "
+                  << std::setprecision(6) << bus.curvature << " curvature";
     }
 
     size_t Bus::GetStopsCount() const {
@@ -21,17 +19,14 @@ namespace catalogue {
     void TransportCatalogue::AddStop(Stop stop) {
         const auto position = stops_db_.insert(stops_db_.begin(), std::move(stop));
         stops_.insert({position->name, &(*position)});
-        // Add stop for <stop-bus> correspondence
         buses_stops_.insert({position->name, {}});
     }
 
     void TransportCatalogue::AddDistance(std::string_view stop_from, std::string_view stop_to, int distance) {
-        //! On this step we suppose that ALL stops have been parsed
         distances_stops_.insert({{stops_.at(stop_from), stops_.at(stop_to)}, distance});
     }
 
     void TransportCatalogue::AddBus(Bus bus) {
-        //! On this step we suppose that ALL stops have been parsed
         for (auto& stop : bus.stops)
             stop = stops_.find(stop)->first;
         bus.unique_stops = {bus.stops.begin(), bus.stops.end()};
@@ -39,7 +34,6 @@ namespace catalogue {
         const auto position = buses_db_.insert(buses_db_.begin(), std::move(bus));
         buses_.insert({position->number, &(*position)});
 
-        // Add stop for <stop-bus> correspondence
         for (std::string_view stop : position->stops)
             buses_stops_[stop].insert(position->number);
     }
@@ -48,56 +42,35 @@ namespace catalogue {
         if (buses_.count(bus_number) == 0)
             return std::nullopt;
 
-        const Bus* bus_info = buses_.at(bus_number);
+        const Bus* bus = buses_.at(bus_number);
 
-        BusStat result;
-        result.number = bus_info->number;
-        result.stops_count = bus_info->GetStopsCount();
-        result.unique_stops_count = bus_info->unique_stops.size();
-        result.route_length = CalculateLength(bus_info);
-        result.curvature = static_cast<double>(result.route_length) / CalculateGeoLength(bus_info);
-
-        return result;
+        return BusStat{bus->number, bus->GetStopsCount(), bus->unique_stops.size(), CalculateLength(bus), static_cast<double>(CalculateLength(bus)) / CalculateGeoLength(bus)};
     }
 
-    int TransportCatalogue::CalculateLength(const Bus* bus_info) const {
-        auto get_route_length = [this](std::string_view from, std::string_view to) {
+    int TransportCatalogue::CalculateLength(const Bus* bus) const {
+        auto get_route_len = [this](std::string_view from, std::string_view to) {
             auto key = std::make_pair(stops_.at(from), stops_.at(to));
-            // If we not found 'from -> to' than we are looking for 'to -> from'
-            return (distances_stops_.count(key) > 0)
-                    ? distances_stops_.at(key)
-                    : distances_stops_.at({stops_.at(to), stops_.at(from)});
+            return (distances_stops_.count(key) > 0) ? distances_stops_.at(key) : distances_stops_.at({stops_.at(to), stops_.at(from)});
         };
 
-        int forward_route =
-            std::transform_reduce(bus_info->stops.begin(), std::prev(bus_info->stops.end()),
-                                std::next(bus_info->stops.begin()), 0, std::plus<>(), get_route_length);
-        if (bus_info->type == RouteType::CIRCLE)
-            return forward_route;
+        int forward_route = std::transform_reduce(bus->stops.begin(), std::prev(bus->stops.end()), std::next(bus->stops.begin()), 0, std::plus<>(), get_route_len);
+        int backward_route = std::transform_reduce(bus->stops.rbegin(), std::prev(bus->stops.rend()), std::next(bus->stops.rbegin()), 0, std::plus<>(), get_route_len);
 
-        // Otherwise, this is a two-directional way, so we need to calculate the distance on backward way
-
-        int backward_route =
-            std::transform_reduce(bus_info->stops.rbegin(), std::prev(bus_info->stops.rend()),
-                                std::next(bus_info->stops.rbegin()), 0, std::plus<>(), get_route_length);
-
-        return forward_route + backward_route;
+        return (bus->type == RouteType::CIRCLE) ? forward_route : forward_route + backward_route;
     }
 
-    double TransportCatalogue::CalculateGeoLength(const Bus* bus_info) const {
-        double geographic_length = std::transform_reduce(
-            std::next(bus_info->stops.begin()), bus_info->stops.end(), bus_info->stops.begin(), 0.,
-            std::plus<>(), [this](std::string_view from, std::string_view to) {
-                return catalogue::geo::ComputeDistance(stops_.at(from)->point, stops_.at(to)->point);
-            });
+    double TransportCatalogue::CalculateGeoLength(const Bus* bus) const {
+        auto get_geographic_len = [this](std::string_view from, std::string_view to) {
+            return geo::ComputeDistance(stops_.at(from)->point, stops_.at(to)->point);
+        };
 
-        return (bus_info->type == RouteType::CIRCLE) ? geographic_length : geographic_length * 2.;
+        double geographic_length = std::transform_reduce(bus->stops.begin(), std::prev(bus->stops.end()), std::next(bus->stops.begin()), 0., std::plus<>(), get_geographic_len);
+
+        return (bus->type == RouteType::CIRCLE) ? geographic_length : geographic_length * 2.;
     }
 
     const std::set<std::string_view>* TransportCatalogue::GetBusPassStop(std::string_view stop_name) const {
-        if (const auto position = buses_stops_.find(stop_name); position != buses_stops_.cend())
-            return &position->second;
-        return nullptr;
+        return (buses_stops_.count(stop_name) > 0) ? &buses_stops_.at(stop_name) : nullptr;
     }
 
 }  // namespace catalogue
