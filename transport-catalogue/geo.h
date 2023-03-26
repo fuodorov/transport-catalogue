@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace geo {
+namespace catalogue::geo {
     struct Coordinates {
         double lat{0.};
         double lng{0.};
@@ -15,4 +15,4 @@ namespace geo {
                     cos(from.lat * dr) * cos(to.lat * dr) * cos(abs(from.lng - to.lng) * dr)) *
             6371000;
     }
-}  // namespace geo
+}  // namespace catalogue::geo
