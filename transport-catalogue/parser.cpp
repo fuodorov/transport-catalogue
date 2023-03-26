@@ -13,8 +13,8 @@ namespace catalogue::parser {
         return text.substr(word_end + (" "sv).size(), text.size() - word_end);
     }
 
-    DistancesToStops ParseDistances(std::string_view text) {
-        DistancesToStops result;
+    Distances ParseDistances(std::string_view text) {
+        Distances result;
 
         std::regex distance_regex(R"(, ([\d.]+)m to ([\w ]+))");
         std::smatch match;
@@ -64,8 +64,8 @@ namespace catalogue::parser {
 
         result.number = RemoveFirstWord(text.substr(0, text.find(": "sv)));
         result.type = (text.find(" > "sv) != std::string_view::npos) ? RouteType::CIRCLE : RouteType::TWO_DIRECTIONAL;
-        result.stop_names = Split(text.substr(text.find(": "sv) + (": "sv).size()), (result.type == RouteType::CIRCLE) ? " > "sv : " - "sv);
-        result.unique_stops = {result.stop_names.begin(), result.stop_names.end()};
+        result.stops = Split(text.substr(text.find(": "sv) + (": "sv).size()), (result.type == RouteType::CIRCLE) ? " > "sv : " - "sv);
+        result.unique_stops = {result.stops.begin(), result.stops.end()};
 
         return result;
     }
@@ -114,13 +114,13 @@ namespace catalogue::parser {
             std::getline(input_stream, query);
             std::string_view info = RemoveFirstWord(query);
             if (query.substr(0, 3) == "Bus"s) {
-                if (auto statistics = catalogue.GetBusStatistics(info)) {
+                if (auto statistics = catalogue.GetBusStat(info)) {
                     output_stream << *statistics << std::endl;
                 } else {
                     output_stream << "Bus " << info << ": not found" << std::endl;
                 }
             } else if (query.substr(0, 4) == "Stop"s) {
-                auto* buses = catalogue.GetBusesPassingThroughTheStop(info);
+                auto* buses = catalogue.GetBusPassStop(info);
 
                 if (!buses) {
                     output_stream << "Stop " << info << ": not found" << std::endl;
