@@ -6,7 +6,6 @@
 #include "catalogue.h"
 
 namespace catalogue::parser {
-    std::string_view RemoveFirstWord(std::string_view text);
     DistancesToStops ParseDistances(std::string_view text);
     std::pair<catalogue::Stop, bool> ParseCoordinates(const std::string& text);
     catalogue::Bus ParseRoutes(std::string_view text);

@@ -46,27 +46,25 @@ namespace catalogue::parser {
         return {std::move(stop), match[4].matched};
     }
 
-    Bus ParseRoutes(std::string_view text) {
-        //! Input format for circle route: Bus Y: Stop#1 > Stop#2 > Stop#3 ..
-        //! Input format for two-directional route: Bus Y: Stop#1 - Stop#2 - Stop#3 ..
+    std::vector<std::string_view> Split(std::string_view text, std::string_view separator) {
+        std::vector<std::string_view> result;
 
-        Bus result;
-
-        size_t bus_start = text.find(' ') + (" "sv).size();
-        size_t bus_end = text.find(": "sv, bus_start);
-        result.number = text.substr(bus_start, bus_end - bus_start);
-
-        result.type = (text[text.find_first_of("->")] == '>') ? RouteType::CIRCLE : RouteType::TWO_DIRECTIONAL;
-        std::string_view stops_separator = (result.type == RouteType::CIRCLE) ? " > "sv : " - "sv;
-
-        size_t stop_begin = bus_end + (": "sv).size();
-        while (stop_begin <= text.length()) {
-            size_t stop_end = text.find(stops_separator, stop_begin);
-
-            result.stop_names.push_back(text.substr(stop_begin, stop_end - stop_begin));
-            stop_begin = (stop_end == std::string_view::npos) ? stop_end : stop_end + stops_separator.size();
+        size_t word_begin = 0;
+        while (word_begin < text.size()) {
+            size_t word_end = text.find(separator, word_begin);
+            result.push_back(text.substr(word_begin, word_end - word_begin));
+            word_begin = (word_end == std::string_view::npos) ? word_end : word_end + separator.size();
         }
 
+        return result;
+    }
+
+    Bus ParseRoutes(std::string_view text) {
+        Bus result;
+
+        result.number = RemoveFirstWord(text.substr(0, text.find(": "sv)));
+        result.type = (text.find(" > "sv) != std::string_view::npos) ? RouteType::CIRCLE : RouteType::TWO_DIRECTIONAL;
+        result.stop_names = Split(text.substr(text.find(": "sv) + (": "sv).size()), (result.type == RouteType::CIRCLE) ? " > "sv : " - "sv);
         result.unique_stops = {result.stop_names.begin(), result.stop_names.end()};
 
         return result;
