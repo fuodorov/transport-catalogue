@@ -3,12 +3,8 @@
 
 #include "transport_catalogue.h"
 
-namespace catalog::output_utils {
-std::string_view ParseBusStatisticsRequest(std::string_view text);
-
-std::string_view ParseBusesPassingThroughStopRequest(std::string_view text);
-
-void PrintBusesPassingThroughStop(std::ostream& os, std::string_view stop_name,
-                                  const std::set<std::string_view>* buses);
-
-}  // namespace catalog::output_utils
+namespace catalogue::output {
+    std::string_view ParseBusStatistics(std::string_view text);
+    std::string_view ParseBusPassStop(std::string_view text);
+    void PrintBusPassStop(std::ostream& os, std::string_view stop_name, const std::set<std::string_view>* buses);
+}  // namespace catalogue::output

@@ -88,7 +88,7 @@
 #include "input_reader.h"
 
 using namespace std::literals;
-using namespace catalog::input_utils;
+using namespace catalogue::input;
 
 int main() {
     ParseTransportCatalogueQueries(std::cin);
