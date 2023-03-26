@@ -13,7 +13,7 @@ using namespace catalogue::parser;
 
 void QueriesEngine(std::istream& input, std::ostream& output) {
     TransportCatalogue catalogue;
-    ParseTransportCatalogueQueries(catalogue, input, output);
+    ParseQueries(catalogue, input, output);
 }
 
 void TestQueriesEngine(stringstream& input, stringstream& output) {

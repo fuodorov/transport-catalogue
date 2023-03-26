@@ -13,7 +13,7 @@ namespace catalogue::parser {
         return text.substr(word_end + (" "sv).size(), text.size() - word_end);
     }
 
-    DistancesToStops ParseBusStopDistances(std::string_view text) {
+    DistancesToStops ParseDistances(std::string_view text) {
         DistancesToStops result;
 
         std::regex distance_regex(R"(, ([\d.]+)m to ([\w ]+))");
@@ -32,7 +32,7 @@ namespace catalogue::parser {
         return result;
     }
 
-    std::pair<catalogue::Stop, bool> ParseBusStopCoordinates(const std::string& text) {
+    std::pair<catalogue::Stop, bool> ParseCoordinates(const std::string& text) {
         Stop stop;
 
         std::regex stop_regex(R"(Stop ([\w ]+)?: ([\d.]+), ([\d.]+)(, [\d.]+m to [\w ]+)*$)");
@@ -46,7 +46,7 @@ namespace catalogue::parser {
         return {std::move(stop), match[4].matched};
     }
 
-    Bus ParseBusRoute(std::string_view text) {
+    Bus ParseRoutes(std::string_view text) {
         //! Input format for circle route: Bus Y: Stop#1 > Stop#2 > Stop#3 ..
         //! Input format for two-directional route: Bus Y: Stop#1 - Stop#2 - Stop#3 ..
 
@@ -72,7 +72,7 @@ namespace catalogue::parser {
         return result;
     }
 
-    void ParseTransportCatalogueQueries(TransportCatalogue &catalogue, std::istream &input_stream, std::ostream &output_stream) {
+    void ParseQueries(TransportCatalogue &catalogue, std::istream &input_stream, std::ostream &output_stream) {
         int queries_count{0};
         input_stream >> queries_count;
         input_stream.get();
@@ -86,7 +86,7 @@ namespace catalogue::parser {
         for (int id = 0; id < queries_count; ++id) {
             std::getline(input_stream, query);
             if (query.substr(0, 4) == "Stop"s) {
-                auto [stop, is_store_query] = ParseBusStopCoordinates(query);
+                auto [stop, is_store_query] = ParseCoordinates(query);
                 if (is_store_query)
                     stop_distances.emplace_back(stop.name, std::move(query));
                 catalogue.AddStop(std::move(stop));
@@ -96,12 +96,12 @@ namespace catalogue::parser {
         }
 
         for (const auto& [stop_from, query] : stop_distances) {
-            for (auto [stop_to, distance] : ParseBusStopDistances(query))
+            for (auto [stop_to, distance] : ParseDistances(query))
                 catalogue.AddDistance(stop_from, stop_to, distance);
         }
 
         for (const auto& bus_query : bus_queries)
-            catalogue.AddBus(ParseBusRoute(bus_query));
+            catalogue.AddBus(ParseRoutes(bus_query));
 
         input_stream >> queries_count;
         input_stream.get();
