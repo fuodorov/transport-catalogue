@@ -5,20 +5,12 @@
 
 
 namespace catalogue::parser {
-
     using namespace std::literals;
     using namespace catalogue;
 
-    std::string_view ParseBusStatistics(std::string_view text) {
-        //! Input: Bus BusNumber
-        size_t bus_begin = text.find(" "sv) + (" "sv).size();
-        return text.substr(bus_begin, text.size() - bus_begin);
-    }
-
-    std::string_view ParseBusPassStop(std::string_view text) {
-        //! Input: Stop StopName
-        size_t stop_begin = text.find(" "sv) + (" "sv).size();
-        return text.substr(stop_begin, text.size() - stop_begin);
+    std::string_view RemoveFirstWord(std::string_view text) {
+        size_t word_end = text.find(" "sv);
+        return text.substr(word_end + (" "sv).size(), text.size() - word_end);
     }
 
     DistancesToStops ParseDistances(std::string_view text) {
@@ -131,7 +123,7 @@ namespace catalogue::parser {
         for (int id = 0; id < queries_count; ++id) {
             std::getline(input_stream, query);
             if (query.substr(0, 3) == "Bus"s) {
-                std::string_view bus_number = ParseBusStatistics(query);
+                std::string_view bus_number = RemoveFirstWord(query);
                 
                 if (auto bus_statistics = catalogue.GetBusStatistics(bus_number)) {
                     output_stream << *bus_statistics << std::endl;
@@ -139,7 +131,7 @@ namespace catalogue::parser {
                     output_stream << "Bus " << bus_number << ": not found" << std::endl;
                 }
             } else if (query.substr(0, 4) == "Stop"s) {
-                std::string_view stop_name = ParseBusPassStop(query);
+                std::string_view stop_name = RemoveFirstWord(query);
                 auto* buses = catalogue.GetBusesPassingThroughTheStop(stop_name);
 
                 if (!buses) {
