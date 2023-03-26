@@ -11,5 +11,5 @@ namespace catalogue::parser {
     DistancesToStops ParseDistances(std::string_view text);
     std::pair<catalogue::Stop, bool> ParseBusStop(const std::string& text);
     catalogue::Bus ParseBusRoute(std::string_view text);
-    void ParseTransportCatalogueQueries(std::istream& input_stream);
+    void ParseTransportCatalogueQueries(catalogue::TransportCatalogue& catalogue, std::istream& input_stream, std::ostream& output_stream);
 }  // namespace catalogue::parser

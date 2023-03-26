@@ -95,9 +95,7 @@ namespace catalogue::parser {
         return result;
     }
 
-    void ParseTransportCatalogueQueries(std::istream& input_stream) {
-        TransportCatalogue catalogue;
-
+    void ParseTransportCatalogueQueries(TransportCatalogue &catalogue, std::istream &input_stream, std::ostream &output_stream) {
         int queries_count{0};
         input_stream >> queries_count;
         input_stream.get();
@@ -136,23 +134,23 @@ namespace catalogue::parser {
                 std::string_view bus_number = ParseBusStatistics(query);
                 
                 if (auto bus_statistics = catalogue.GetBusStatistics(bus_number)) {
-                    std::cout << *bus_statistics << std::endl;
+                    output_stream << *bus_statistics << std::endl;
                 } else {
-                    std::cout << "Bus " << bus_number << ": not found" << std::endl;
+                    output_stream << "Bus " << bus_number << ": not found" << std::endl;
                 }
             } else if (query.substr(0, 4) == "Stop"s) {
                 std::string_view stop_name = ParseBusPassStop(query);
                 auto* buses = catalogue.GetBusesPassingThroughTheStop(stop_name);
 
                 if (!buses) {
-                    std::cout << "Stop " << stop_name << ": not found" << std::endl;
+                    output_stream << "Stop " << stop_name << ": not found" << std::endl;
                 } else if (buses->empty()) {
-                    std::cout << "Stop " << stop_name << ": no buses" << std::endl;
+                    output_stream << "Stop " << stop_name << ": no buses" << std::endl;
                 } else {
-                    std::cout << "Stop " << stop_name << ": buses";
+                    output_stream << "Stop " << stop_name << ": buses";
                     for (const auto& bus : *buses)
-                        std::cout << " " << bus;
-                    std::cout << std::endl;
+                        output_stream << " " << bus;
+                    output_stream << std::endl;
                 }
             }
         }
