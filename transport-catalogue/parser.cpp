@@ -70,61 +70,67 @@ namespace catalogue::parser {
         return result;
     }
 
-    void ParseQueries(TransportCatalogue &catalogue, std::istream &input_stream, std::ostream &output_stream) {
-        int queries_count{0};
-        input_stream >> queries_count;
-        input_stream.get();
-
-        std::vector<std::string> bus_queries;
-        bus_queries.reserve(queries_count);
-        std::vector<std::pair<std::string, std::string>> stop_distances;
-        stop_distances.reserve(queries_count);
-
+    void FillQueries(TransportCatalogue &catalogue, std::istream &input_stream, int count, std::vector<std::string> &queries, std::vector<std::pair<std::string, std::string>> &distances) {
         std::string query;
-        for (int id = 0; id < queries_count; ++id) {
+        for (int i = 0; i < count; ++i) {
             std::getline(input_stream, query);
             if (query.substr(0, 4) == "Stop"s) {
                 auto [stop, is_store_query] = ParseCoordinates(query);
-                if (is_store_query)
-                    stop_distances.emplace_back(stop.name, std::move(query));
+                if (is_store_query) {
+                    distances.emplace_back(stop.name, std::move(query));
+                }
                 catalogue.AddStop(std::move(stop));
             } else if (query.substr(0, 3) == "Bus"s) {
-                bus_queries.emplace_back(std::move(query));
+                queries.emplace_back(std::move(query));
             }
         }
+    }
 
-        for (const auto& [stop_from, query] : stop_distances) {
-            for (auto [stop_to, distance] : ParseDistances(query))
-                catalogue.AddDistance(stop_from, stop_to, distance);
+    void ParseQueries(TransportCatalogue &catalogue, std::istream &input_stream, std::ostream &output_stream) {
+        int count{0};
+        input_stream >> count;
+        input_stream.get();
+
+        std::vector<std::string> queries;
+        std::vector<std::pair<std::string, std::string>> distances;
+        queries.reserve(count);
+        distances.reserve(count);
+
+        FillQueries(catalogue, input_stream, count, queries, distances);
+
+        for (const auto& [from, query] : distances) {
+            for (auto [to, distance] : ParseDistances(query))
+                catalogue.AddDistance(from, to, distance);
         }
 
-        for (const auto& bus_query : bus_queries)
-            catalogue.AddBus(ParseRoutes(bus_query));
+        for (const auto& query : queries) {
+            catalogue.AddBus(ParseRoutes(query));
+        }
 
-        input_stream >> queries_count;
+        input_stream >> count;
         input_stream.get();
-        for (int id = 0; id < queries_count; ++id) {
+        std::string query;
+        for (int i = 0; i < count; ++i) {
             std::getline(input_stream, query);
+            std::string_view info = RemoveFirstWord(query);
             if (query.substr(0, 3) == "Bus"s) {
-                std::string_view bus_number = RemoveFirstWord(query);
-                
-                if (auto bus_statistics = catalogue.GetBusStatistics(bus_number)) {
-                    output_stream << *bus_statistics << std::endl;
+                if (auto statistics = catalogue.GetBusStatistics(info)) {
+                    output_stream << *statistics << std::endl;
                 } else {
-                    output_stream << "Bus " << bus_number << ": not found" << std::endl;
+                    output_stream << "Bus " << info << ": not found" << std::endl;
                 }
             } else if (query.substr(0, 4) == "Stop"s) {
-                std::string_view stop_name = RemoveFirstWord(query);
-                auto* buses = catalogue.GetBusesPassingThroughTheStop(stop_name);
+                auto* buses = catalogue.GetBusesPassingThroughTheStop(info);
 
                 if (!buses) {
-                    output_stream << "Stop " << stop_name << ": not found" << std::endl;
+                    output_stream << "Stop " << info << ": not found" << std::endl;
                 } else if (buses->empty()) {
-                    output_stream << "Stop " << stop_name << ": no buses" << std::endl;
+                    output_stream << "Stop " << info << ": no buses" << std::endl;
                 } else {
-                    output_stream << "Stop " << stop_name << ": buses";
-                    for (const auto& bus : *buses)
+                    output_stream << "Stop " << info << ": buses";
+                    for (const auto& bus : *buses) {
                         output_stream << " " << bus;
+                    }
                     output_stream << std::endl;
                 }
             }
