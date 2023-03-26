@@ -1,15 +1,25 @@
-#include "input_reader.h"
-#include "stat_reader.h"
+#include "parser.h"
 
 #include <cassert>
 #include <regex>
 
 
-namespace catalogue::input {
+namespace catalogue::parser {
 
     using namespace std::literals;
     using namespace catalogue;
-    using namespace output;
+
+    std::string_view ParseBusStatistics(std::string_view text) {
+        //! Input: Bus BusNumber
+        size_t bus_begin = text.find(" "sv) + (" "sv).size();
+        return text.substr(bus_begin, text.size() - bus_begin);
+    }
+
+    std::string_view ParseBusPassStop(std::string_view text) {
+        //! Input: Stop StopName
+        size_t stop_begin = text.find(" "sv) + (" "sv).size();
+        return text.substr(stop_begin, text.size() - stop_begin);
+    }
 
     DistancesToStops ParseDistances(std::string_view text) {
         //! Input format: Stop X: latitude, longitude, D1m to stop1, D2m to stop2, ...
@@ -124,7 +134,7 @@ namespace catalogue::input {
             std::getline(input_stream, query);
             if (query.substr(0, 3) == "Bus"s) {
                 std::string_view bus_number = ParseBusStatistics(query);
-
+                
                 if (auto bus_statistics = catalogue.GetBusStatistics(bus_number)) {
                     std::cout << *bus_statistics << std::endl;
                 } else {
@@ -134,9 +144,18 @@ namespace catalogue::input {
                 std::string_view stop_name = ParseBusPassStop(query);
                 auto* buses = catalogue.GetBusesPassingThroughTheStop(stop_name);
 
-                PrintBusPassStop(std::cout, stop_name, buses);
+                if (!buses) {
+                    std::cout << "Stop " << stop_name << ": not found" << std::endl;
+                } else if (buses->empty()) {
+                    std::cout << "Stop " << stop_name << ": no buses" << std::endl;
+                } else {
+                    std::cout << "Stop " << stop_name << ": buses";
+                    for (const auto& bus : *buses)
+                        std::cout << " " << bus;
+                    std::cout << std::endl;
+                }
             }
         }
     }
 
-}  // namespace catalogue::input
+}  // namespace catalogue::parser

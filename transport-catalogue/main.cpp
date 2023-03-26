@@ -2,7 +2,7 @@
 // #include <sstream>
 
 // #include "geo.h"
-// #include "input_reader.h"
+// #include "parser.h"
 // #include "stat_reader.h"
 // #include "transport_catalogue.h"
 
@@ -85,10 +85,10 @@
 #include <fstream>
 #include <iostream>
 
-#include "input_reader.h"
+#include "parser.h"
 
 using namespace std::literals;
-using namespace catalogue::input;
+using namespace catalogue::parser;
 
 int main() {
     ParseTransportCatalogueQueries(std::cin);
