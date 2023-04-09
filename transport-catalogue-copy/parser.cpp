@@ -30,23 +30,23 @@ namespace parser {
             bus.type = info.at("is_roundtrip"s).AsBool() ? RouteType::CIRCLE : RouteType::TWO_DIRECTIONAL;
 
             const auto& stops = info.at("stops"s).AsArray();
-            bus.stop_names.reserve(stops.size());
+            bus.stops.reserve(stops.size());
 
             for (const auto& stop : stops)
-                bus.stop_names.emplace_back(stop.AsString());
+                bus.stops.emplace_back(stop.AsString());
 
-            bus.unique_stops = {bus.stop_names.begin(), bus.stop_names.end()};
+            bus.unique_stops = {bus.stops.begin(), bus.stops.end()};
 
             return bus;
         }
 
-        json::Node MakeBusResponse(int request_id, const BusStatistics& statistics) {
+        json::Node MakeBusResponse(int request_id, const BusStat& statistics) {
             json::Dict response;
 
             // P.S. no need to use std::move() because all types on the right are trivial
             response.emplace("curvature"s, statistics.curvature);
             response.emplace("request_id"s, request_id);
-            response.emplace("route_length"s, statistics.rout_length);
+            response.emplace("route_length"s, statistics.route_length);
             response.emplace("stop_count"s, static_cast<int>(statistics.stops_count));
             response.emplace("unique_stop_count"s, static_cast<int>(statistics.unique_stops_count));
 
@@ -215,7 +215,7 @@ namespace parser {
             if (type == "Bus"s) {
                 name = request_dict_view.at("name"s).AsString();
 
-                if (auto bus_statistics = catalogue.GetBusStatistics(name)) {
+                if (auto bus_statistics = catalogue.GetBusStat(name)) {
                     response.emplace_back(MakeBusResponse(request_id, *bus_statistics));
                 } else {
                     response.emplace_back(MakeErrorResponse(request_id));
