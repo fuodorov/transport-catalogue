@@ -4,13 +4,11 @@
 #include <vector>
 
 struct Size {
-    int width = 0;
-    int height = 0;
+    int width = 0, height = 0;
 };
 
 struct Point {
-    int x = 0;
-    int y = 0;
+    int x = 0, y = 0;
 };
 
 using Image = std::vector<std::string>;

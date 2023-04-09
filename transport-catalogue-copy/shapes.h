@@ -1,16 +1,15 @@
 #pragma once
+
 #include <memory>
 
 #include "texture.h"
 
-// Поддерживаемые виды фигур: прямоугольник и эллипс
 enum class ShapeType { RECTANGLE, ELLIPSE };
 
 class Shape {
-public:  // Constructor
+public:
     explicit Shape(ShapeType type) : type_(type) {}
 
-public:  // Methods
     void SetPosition(Point pos) {
         position_ = pos;
     }
@@ -23,18 +22,10 @@ public:  // Methods
         texture_ = std::move(texture);
     }
 
-    /*
-     * Method draws a shape on the specified image
-     * Depending on the type of shape, either an ellipse or a rectangle should be drawn
-     * The pixels of the shape that go outside the texture, and also in the case
-     * when the texture is not specified, should be rendered with a dot '.'
-     * The parts of the shape outside the bounds of the image object should be discarded.
-     */
     void Draw(Image& image) const {
         const auto [image_width, image_height] = GetImageSize(image);
 
-        int x_global{0};
-        int y_global{0};
+        int x_global{0}, y_global{0};
         char pixel;
 
         for (int y = 0; y < size_.height; ++y) {
@@ -53,7 +44,7 @@ public:  // Methods
         }
     }
 
-private:  // Fields
+private:
     ShapeType type_;
     Point position_;
     Size size_;

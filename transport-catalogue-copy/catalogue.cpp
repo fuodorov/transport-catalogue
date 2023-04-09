@@ -5,7 +5,6 @@
 #include <iomanip>
 
 namespace catalogue {
-
     std::ostream& operator<<(std::ostream& os, const BusStatistics& bus_info) {
         os << "Bus " << bus_info.number << ": " << bus_info.stops_count << " stops on route, "
         << bus_info.unique_stops_count << " unique stops, ";
@@ -167,5 +166,4 @@ namespace catalogue {
             return std::make_unique<std::set<std::string_view>>(position->second);
         return nullptr;
     }
-
 }  // namespace catalogue
