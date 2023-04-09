@@ -1,7 +1,7 @@
 #pragma once
 
 #include "svg.h"
-#include "transport_catalogue.h"
+#include "catalogue.h"
 
 namespace render {
 

@@ -7,7 +7,7 @@
 
 #include "json.h"
 #include "map_renderer.h"
-#include "transport_catalogue.h"
+#include "catalogue.h"
 
 namespace request {
 
