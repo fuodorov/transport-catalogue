@@ -35,9 +35,7 @@ namespace renderer {
         return *this;
     }
 
-    MapImageRenderer::MapImageRenderer(const catalogue::TransportCatalogue& catalogue, const Visualization& settings,
-                                    svg::Document& image)
-        : catalogue_(catalogue),
+    MapImageRenderer::MapImageRenderer(const catalogue::TransportCatalogue& catalogue, const Visualization& settings, svg::Document& image): catalogue_(catalogue),
         settings_(settings),
         image_(image),
         min_lng_(catalogue_.GetMinStopCoordinates().lng),
@@ -102,16 +100,16 @@ namespace renderer {
                             .SetPosition(ToScreenPosition(stop->point))
                             .SetOffset(bus_settings.offset_)
                             .SetFontSize(bus_settings.font_size_)
-                            .SetFontFamily("Verdana")
-                            .SetFontWeight("bold"));
+                            .SetFontFamily(constants::DEFAULT_FONT_FAMILY)
+                            .SetFontWeight(constants::DEFAULT_FONT_WEIGHT));
 
                 image_.Add(svg::Text()
                             .SetData(bus->number)
                             .SetPosition(ToScreenPosition(stop->point))
                             .SetOffset(bus_settings.offset_)
                             .SetFontSize(bus_settings.font_size_)
-                            .SetFontFamily("Verdana"s)
-                            .SetFontWeight("bold"s)
+                            .SetFontFamily(constants::DEFAULT_FONT_FAMILY)
+                            .SetFontWeight(constants::DEFAULT_FONT_WEIGHT)
                             .SetFillColor(TakeColorById(route_id)));
             }
 
@@ -142,7 +140,7 @@ namespace renderer {
                         .SetPosition(ToScreenPosition(stop->point))
                         .SetOffset(stop_settings.offset_)
                         .SetFontSize(stop_settings.font_size_)
-                        .SetFontFamily("Verdana"s));
+                        .SetFontFamily(constants::DEFAULT_FONT_FAMILY));
 
             image_.Add(svg::Text()
                         .SetData(stop->name)
@@ -150,49 +148,39 @@ namespace renderer {
                         .SetPosition(ToScreenPosition(stop->point))
                         .SetOffset(stop_settings.offset_)
                         .SetFontSize(stop_settings.font_size_)
-                        .SetFontFamily("Verdana"s));
+                        .SetFontFamily(constants::DEFAULT_FONT_FAMILY));
         }
     }
 
     double MapImageRenderer::CalculateZoom() const {
         double zoom{0.};
-
         const auto [min_lat, min_lng] = catalogue_.GetMinStopCoordinates();
         const auto [max_lat, max_lng] = catalogue_.GetMaxStopCoordinates();
-        const double& padding = settings_.screen_.padding_;
 
         auto make_zoom_coefficient = [&](double max_min_diff, double screen_size) -> double {
-            return (max_min_diff == 0.) ? std::numeric_limits<double>::max() : (screen_size - 2. * padding) / max_min_diff;
+            return (max_min_diff == 0.) ? std::numeric_limits<double>::max() : (screen_size - 2. * settings_.screen_.padding_) / max_min_diff;
         };
 
         double zoom_x = make_zoom_coefficient(max_lng - min_lng, settings_.screen_.width_);
         double zoom_y = make_zoom_coefficient(max_lat - min_lat, settings_.screen_.height_);
 
         zoom = std::min(zoom_x, zoom_y);
-        zoom = (zoom == std::numeric_limits<double>::max()) ? 0. : zoom;
-
-        return zoom;
+        return (zoom == std::numeric_limits<double>::max()) ? 0. : zoom;
     }
 
     svg::Color MapImageRenderer::TakeColorById(int route_id) const {
-        unsigned int color_id = route_id % settings_.colors_.size();
-        return settings_.colors_.at(color_id);
+        return settings_.colors_.at(static_cast<int>(route_id) % settings_.colors_.size());
     }
 
     svg::Point MapImageRenderer::ToScreenPosition(geo::Coordinates position) {
         svg::Point point;
-
-        const double& padding = settings_.screen_.padding_;
-
-        point.x = (position.lng - min_lng_) * zoom_ + padding;
-        point.y = (max_lat_ - position.lat) * zoom_ + padding;
-
+        point.x = (position.lng - min_lng_) * zoom_ + settings_.screen_.padding_;
+        point.y = (max_lat_ - position.lat) * zoom_ + settings_.screen_.padding_;
         return point;
     }
 
     std::string RenderTransportMap(const catalogue::TransportCatalogue& catalogue, const Visualization& settings) {
         svg::Document image;
-
         MapImageRenderer renderer{catalogue, settings, image};
         renderer.Render();
         std::stringstream ss;
