@@ -3,7 +3,7 @@
 #include "svg.h"
 #include "catalogue.h"
 
-namespace render {
+namespace renderer {
 
 enum class LabelType { Bus = 0, Stop = 1 };
 

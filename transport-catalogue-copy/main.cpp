@@ -10,7 +10,7 @@ void JsonQueriesEngine(std::istream& input, std::ostream& output) {
     TransportCatalogue catalogue;
 
     auto response = parser::MakeStatResponse(
-        parser::ProcessBaseRequest(json.AsMap().at("base_requests"s).AsArray()), 
+        parser::ParseQueries(json.AsMap().at("base_requests"s).AsArray()), 
         json.AsMap().at("stat_requests"s).AsArray(), 
         parser::ParseVisualizationSettings(json.AsMap().at("render_settings"s).AsMap())
     );

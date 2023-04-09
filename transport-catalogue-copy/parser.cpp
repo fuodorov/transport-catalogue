@@ -88,8 +88,8 @@ json::Node MakeMapImageResponse(int request_id, const std::string& image) {
 
 /* METHODS FOR MAP IMAGE RENDERING */
 
-render::Screen ParseScreenSettings(const json::Dict& settings) {
-    render::Screen screen;
+renderer::Screen ParseScreenSettings(const json::Dict& settings) {
+    renderer::Screen screen;
 
     screen.width_ = settings.at("width"s).AsDouble();
     screen.height_ = settings.at("height"s).AsDouble();
@@ -98,7 +98,7 @@ render::Screen ParseScreenSettings(const json::Dict& settings) {
     return screen;
 }
 
-render::Label ParseLabelSettings(const json::Dict& settings, const std::string& key_type) {
+renderer::Label ParseLabelSettings(const json::Dict& settings, const std::string& key_type) {
     int font_size = settings.at(key_type + "_label_font_size"s).AsInt();
     const json::Array offset = settings.at(key_type + "_label_offset"s).AsArray();
 
@@ -127,8 +127,8 @@ svg::Color ParseColor(const json::Node& node) {
     return svg::Rgba(red, green, blue, alpha);
 }
 
-render::UnderLayer ParseLayer(const json::Dict& settings) {
-    render::UnderLayer layer;
+renderer::UnderLayer ParseLayer(const json::Dict& settings) {
+    renderer::UnderLayer layer;
 
     layer.color_ = ParseColor(settings.at("underlayer_color"s));
     layer.width_ = settings.at("underlayer_width"s).AsDouble();
@@ -138,7 +138,7 @@ render::UnderLayer ParseLayer(const json::Dict& settings) {
 
 }  // namespace
 
-TransportCatalogue ProcessBaseRequest(const json::Array& requests) {
+TransportCatalogue ParseQueries(const json::Array& requests) {
     TransportCatalogue catalogue;
 
     // We could add distances between stops ONLY when they EXIST in catalogue
@@ -181,8 +181,8 @@ TransportCatalogue ProcessBaseRequest(const json::Array& requests) {
     return catalogue;
 }
 
-render::Visualization ParseVisualizationSettings(const json::Dict& settings) {
-    render::Visualization final_settings;
+renderer::Visualization ParseVisualizationSettings(const json::Dict& settings) {
+    renderer::Visualization final_settings;
 
     double line_width = settings.at("line_width"s).AsDouble();
     double stop_radius = settings.at("stop_radius"s).AsDouble();
@@ -197,8 +197,8 @@ render::Visualization ParseVisualizationSettings(const json::Dict& settings) {
     final_settings.SetScreen(ParseScreenSettings(settings))
         .SetLineWidth(line_width)
         .SetStopRadius(stop_radius)
-        .SetLabels(render::LabelType::Stop, ParseLabelSettings(settings, "stop"s))
-        .SetLabels(render::LabelType::Bus, ParseLabelSettings(settings, "bus"s))
+        .SetLabels(renderer::LabelType::Stop, ParseLabelSettings(settings, "stop"s))
+        .SetLabels(renderer::LabelType::Bus, ParseLabelSettings(settings, "bus"s))
         .SetUnderLayer(ParseLayer(settings))
         .SetColors(std::move(svg_colors));
 
@@ -206,7 +206,7 @@ render::Visualization ParseVisualizationSettings(const json::Dict& settings) {
 }
 
 json::Node MakeStatResponse(const TransportCatalogue& catalogue, const json::Array& requests,
-                            const render::Visualization& settings) {
+                            const renderer::Visualization& settings) {
     json::Array response;
     response.reserve(requests.size());
 

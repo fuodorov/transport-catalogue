@@ -1,21 +1,16 @@
 #pragma once
 
-/*
- * Description: parses JSON data built during parsing and forms an array
- * of JSON responses
- */
-
 #include "json.h"
 #include "renderer.h"
 #include "catalogue.h"
 
 namespace parser {
 
-catalogue::TransportCatalogue ProcessBaseRequest(const json::Array& requests);
+catalogue::TransportCatalogue ParseQueries(const json::Array& requests);
 
-render::Visualization ParseVisualizationSettings(const json::Dict& settings);
+renderer::Visualization ParseVisualizationSettings(const json::Dict& settings);
 
 json::Node MakeStatResponse(const catalogue::TransportCatalogue& catalogue, const json::Array& requests,
-                            const render::Visualization& settings);
+                            const renderer::Visualization& settings);
 
 }  // namespace parser

@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace render {
+namespace renderer {
 
 using namespace std::literals;
 
