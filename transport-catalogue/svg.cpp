@@ -70,8 +70,9 @@ namespace svg {
     }
 
     void RenderContext::RenderIndent() const {
-        for (int i = 0; i < indent; ++i)
+        for (int i = 0; i < indent; ++i){
             out.put(' ');
+        }
     }
 
     void Object::Render(const RenderContext& context) const {
@@ -113,8 +114,9 @@ namespace svg {
         out << "<polyline points=\"";
         int id{0};
         for (const auto& vertex : vertexes_) {
-            if (id++ != 0)
+            if (id++ != 0){
                 out << " ";
+            }
             out << vertex.x << ","sv << vertex.y;
         }
         out << "\""sv;
@@ -194,8 +196,9 @@ namespace svg {
     void Document::Render(std::ostream& out) const {
         out << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv << std::endl;
         out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv << std::endl;
-        for (const auto& object : storage_)
+        for (const auto& object : storage_){
             object->Render(out);
+        }
         out << "</svg>"sv;
     }
 
@@ -210,8 +213,9 @@ namespace shapes {
             double angle = 2 * M_PI * (ray_id % rays_count_) / rays_count_;
             polyline.AddPoint({center_.x + outer_radius_ * sin(angle), center_.y - outer_radius_ * cos(angle)});
 
-            if (ray_id == rays_count_)
+            if (ray_id == rays_count_){
                 break;
+            }
 
             angle += M_PI / rays_count_;
             polyline.AddPoint({center_.x + inner_radius_ * sin(angle), center_.y - inner_radius_ * cos(angle)});
@@ -233,8 +237,9 @@ namespace shapes {
         current_radius = 2. * head_radius_;
         auto bottom = svg::Circle().SetCenter(current_center).SetRadius(current_radius);
 
-        for (auto circle : {bottom, middle, top})
+        for (auto circle : {bottom, middle, top}){
             container.Add(std::move(circle).SetFillColor(fill_color_).SetStrokeColor(stroke_color_));
+        }
     }
 
     void Triangle::Draw(svg::ObjectContainer& container) const {

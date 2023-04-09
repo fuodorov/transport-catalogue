@@ -135,8 +135,9 @@ namespace svg {
             template <class PropertyType>
             void PrintProperty(std::ostream& os, std::string_view tag_name,
                             const std::optional<PropertyType>& tag_value) const {
-                if (tag_value)
+                if (tag_value){
                     os << " " << tag_name << "=\"" << *tag_value << "\"";
+                }
             }
     };
 
