@@ -5,5 +5,5 @@
 #include "catalogue.h"
 
 namespace builder {
-    json::Node BuildStatResponse(const catalogue::TransportCatalogue& catalogue, const json::Array& requests, const renderer::Visualization& settings);
+    json::Node BuildResponse(const catalogue::TransportCatalogue& catalogue, const json::Array& requests, const renderer::Visualization& settings);
 }  // namespace builder

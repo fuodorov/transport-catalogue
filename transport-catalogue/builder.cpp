@@ -30,13 +30,13 @@ namespace builder {
             return json::Dict{{"request_id"s, request_id}, {"error_message"s, "not found"s}};
         }
 
-        json::Node BuildMapImageResponse(int request_id, const std::string& image) {
+        json::Node BuildMapResponse(int request_id, const std::string& image) {
             return json::Dict{{"request_id"s, request_id}, {"map"s, image}};
         }
 
     }  // namespace
 
-    json::Node BuildStatResponse(const TransportCatalogue& catalogue, const json::Array& requests,
+    json::Node BuildResponse(const TransportCatalogue& catalogue, const json::Array& requests,
                                 const renderer::Visualization& settings) {
         json::Array response;
         response.reserve(requests.size());
@@ -65,7 +65,7 @@ namespace builder {
                 }
             } else if (type == "Map"s) {
                 std::string image = RenderTransportMap(catalogue, settings);
-                response.emplace_back(BuildMapImageResponse(request_id, image));
+                response.emplace_back(BuildMapResponse(request_id, image));
             }
         }
 
