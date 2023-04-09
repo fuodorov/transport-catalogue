@@ -18,17 +18,11 @@ namespace svg {
     }
 
     void ColorPrinter::operator()(Rgb color) const {
-        os << "rgb("s
-        << std::to_string(color.red) << ","s
-        << std::to_string(color.green) << ","
-        << std::to_string(color.blue) << ")"s;
+        os << "rgb("s << std::to_string(color.red) << ","s << std::to_string(color.green) << "," << std::to_string(color.blue) << ")"s;
     }
 
     void ColorPrinter::operator()(Rgba color) const {
-        os << "rgba("s
-        << std::to_string(color.red) << ","s
-        << std::to_string(color.green) << ","s
-        << std::to_string(color.blue) << ","s;
+        os << "rgba("s << std::to_string(color.red) << ","s << std::to_string(color.green) << ","s << std::to_string(color.blue) << ","s;
         os << color.opacity << ")"s;
     }
 
@@ -203,46 +197,3 @@ namespace svg {
     }
 
 }  // namespace svg
-
-namespace shapes {
-
-    void Star::Draw(svg::ObjectContainer& container) const {
-        svg::Polyline polyline;
-
-        for (int ray_id = 0; ray_id <= rays_count_; ++ray_id) {
-            double angle = 2 * M_PI * (ray_id % rays_count_) / rays_count_;
-            polyline.AddPoint({center_.x + outer_radius_ * sin(angle), center_.y - outer_radius_ * cos(angle)});
-
-            if (ray_id == rays_count_){
-                break;
-            }
-
-            angle += M_PI / rays_count_;
-            polyline.AddPoint({center_.x + inner_radius_ * sin(angle), center_.y - inner_radius_ * cos(angle)});
-        }
-
-        container.Add(polyline.SetFillColor(fill_color_).SetStrokeColor(stroke_color_));
-    }
-
-    void Snowman::Draw(svg::ObjectContainer& container) const {
-        svg::Point current_center{head_center_.x, head_center_.y};
-        double current_radius{head_radius_};
-        auto top = svg::Circle().SetCenter(current_center).SetRadius(current_radius);
-
-        current_center.y += 2. * head_radius_;
-        current_radius = 1.5 * head_radius_;
-        auto middle = svg::Circle().SetCenter(current_center).SetRadius(current_radius);
-
-        current_center.y += 3. * head_radius_;
-        current_radius = 2. * head_radius_;
-        auto bottom = svg::Circle().SetCenter(current_center).SetRadius(current_radius);
-
-        for (auto circle : {bottom, middle, top}){
-            container.Add(std::move(circle).SetFillColor(fill_color_).SetStrokeColor(stroke_color_));
-        }
-    }
-
-    void Triangle::Draw(svg::ObjectContainer& container) const {
-        container.Add(svg::Polyline().AddPoint(first_).AddPoint(second_).AddPoint(third_).AddPoint(first_));
-    }
-}  // namespace shapes

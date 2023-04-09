@@ -208,38 +208,3 @@ namespace svg {
     };
 
 }  // namespace svg
-
-namespace shapes {
-    class Star : public svg::Drawable {
-        public:
-            Star(svg::Point center, double outer_radius, double inner_radius, int rays_count) : center_(center), outer_radius_(outer_radius), inner_radius_(inner_radius), rays_count_(rays_count) {}
-            void Draw(svg::ObjectContainer& container) const override;
-
-        private:
-            svg::Point center_;
-            double outer_radius_{0.}, inner_radius_{0.};
-            int rays_count_{0};
-            svg::Color fill_color_{"red"}, stroke_color_{"black"};
-    };
-
-    class Snowman : public svg::Drawable {
-        public:
-            Snowman(svg::Point head_center, double head_radius) : head_center_(head_center), head_radius_(head_radius) {}
-            void Draw(svg::ObjectContainer& container) const override;
-
-        private:
-            svg::Point head_center_;
-            double head_radius_;
-            svg::Color fill_color_{"rgb(240,240,240)"}, stroke_color_{"black"};
-    };
-
-    class Triangle : public svg::Drawable {
-        public:
-            Triangle(svg::Point first, svg::Point second, svg::Point third) : first_(first), second_(second), third_(third) {}
-            void Draw(svg::ObjectContainer& container) const override;
-
-        private:
-            svg::Point first_, second_, third_;
-    };
-
-}  // namespace shapes
