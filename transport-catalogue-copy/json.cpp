@@ -13,18 +13,22 @@ namespace json {
         struct NodeContainerPrinter {
             std::ostream& out;
 
-            void operator()(std::nullptr_t /* value */) const {
+            void operator()(std::nullptr_t) const {
                 out << "null"s;
             }
+            
             void operator()(bool value) const {
                 out << (value ? "true"s : "false"s);
             }
+
             void operator()(int value) const {
                 out << value;
             }
+
             void operator()(double value) const {
                 out << value;
             }
+
             void operator()(const std::string& value) const {
                 out << '"';
                 for (const char symbol : value) {
@@ -50,19 +54,20 @@ namespace json {
                 }
                 out << '"';
             }
+
             void operator()(const Dict& map) const {
                 out << '{';
                 int id{0};
                 for (const auto& [key, value] : map) {
                     if (id++ != 0)
                         out << ", "s;
-                    // Print "key" in this way to take into account escape symbols
                     std::visit(NodeContainerPrinter{out}, Node{key}.GetValue());
                     out << ':';
                     std::visit(NodeContainerPrinter{out}, value.GetValue());
                 }
                 out << '}';
             }
+            
             void operator()(const Array& array) const {
                 out << '[';
 
@@ -88,20 +93,21 @@ namespace json {
         Node LoadNode(std::istream& input);
 
         Node LoadNull(std::istream& input) {
-            if (auto value = LoadLetters(input); value == "null"s)
-                return Node{nullptr};
-
-            throw ParsingError(R"(Incorrect format for Null Node parsing. "null" expected)"s);
+            if (LoadLetters(input) != "null"s) {
+                throw ParsingError(R"(Incorrect format for Null Node parsing. "null" expected)"s);
+            }
+            return Node{nullptr};
         }
 
         Node LoadBool(std::istream& input) {
-            std::string value = LoadLetters(input);
-            if (value == "true"s)
+            if (auto value = LoadLetters(input); value == "true"s) {
                 return Node{true};
-            if (value == "false"s)
+            } else if (value == "false"s) {
                 return Node{false};
+            } else {
+                throw ParsingError(R"(Incorrect format for Boolean Node parsing. "true" or "false" expected)"s);
+            }
 
-            throw ParsingError(R"(Incorrect format for Boolean Node parsing. "true" or "false" expected)"s);
         }
 
         Node LoadArray(std::istream& input) {
@@ -266,7 +272,7 @@ namespace json {
         Node LoadNode(std::istream& input) {
             char symbol;
             if (!(input >> symbol))
-                throw ParsingError("Incorrect format for Node parsing. Unexpected EOF"s);
+                throw ParsingError("Incorrect format for Node parsing"s);
 
             if (symbol == 'n') {
                 input.putback(symbol);
@@ -291,24 +297,31 @@ namespace json {
     bool Node::IsNull() const {
         return std::holds_alternative<std::nullptr_t>(*this);
     }
+
     bool Node::IsBool() const {
         return std::holds_alternative<bool>(*this);
     }
+
     bool Node::IsInt() const {
         return std::holds_alternative<int>(*this);
     }
+
     bool Node::IsDouble() const {
         return std::holds_alternative<double>(*this) || std::holds_alternative<int>(*this);
     }
+
     bool Node::IsPureDouble() const {
         return std::holds_alternative<double>(*this);
     }
+
     bool Node::IsString() const {
         return std::holds_alternative<std::string>(*this);
     }
+
     bool Node::IsArray() const {
         return std::holds_alternative<Array>(*this);
     }
+
     bool Node::IsMap() const {
         return std::holds_alternative<Dict>(*this);
     }
@@ -318,44 +331,54 @@ namespace json {
     }
 
     bool Node::AsBool() const {
-        if (auto* value = std::get_if<bool>(this))
+        if (auto* value = std::get_if<bool>(this)) {
             return *value;
-
-        throw std::logic_error("Impossible to parse node as Boolean"s);
+        } else {
+            throw std::logic_error("Parse error: impossible to parse node as Boolean");
+        }
     }
 
     int Node::AsInt() const {
-        if (auto* value = std::get_if<int>(this))
+        if (auto* value = std::get_if<int>(this)) {
             return *value;
-        throw std::logic_error("Impossible to parse node as Int "s);
+        } else if (auto* value = std::get_if<double>(this)) {
+            return static_cast<int>(*value);
+        } else {
+            throw std::logic_error("Parse error: impossible to parse node as Int");
+        }
     }
 
     double Node::AsDouble() const {
-        if (auto* value = std::get_if<double>(this))
+        if (auto* value = std::get_if<double>(this)) {
             return *value;
-
-        if (auto* value = std::get_if<int>(this))
+        } else if (auto* value = std::get_if<int>(this)) {
             return static_cast<double>(*value);
-
-        throw std::logic_error("Impossible to parse node as Double "s);
+        } else {
+            throw std::logic_error("Parse error: impossible to parse node as Double");
+        }
     }
 
     const std::string& Node::AsString() const {
         if (auto* value = std::get_if<std::string>(this))
             return *value;
-        throw std::logic_error("Impossible to parse node as String"s);
+            
+        throw std::logic_error("Parse error: impossible to parse node as String");
     }
 
     const Array& Node::AsArray() const {
-        if (auto* value = std::get_if<Array>(this))
+        if (auto* value = std::get_if<Array>(this)) {
             return *value;
-        throw std::logic_error("Impossible to parse node as Array"s);
+        } else {
+            throw std::logic_error("Parse error: impossible to parse node as Array");
+        }
     }
 
     const Dict& Node::AsMap() const {
-        if (auto* value = std::get_if<Dict>(this))
+        if (auto* value = std::get_if<Dict>(this)) {
             return *value;
-        throw std::logic_error("Impossible to parse node as Dict"s);
+        } else {
+            throw std::logic_error("Parse error: impossible to parse node as Dict");
+        }
     }
 
     bool operator==(const Node& left, const Node& right) {

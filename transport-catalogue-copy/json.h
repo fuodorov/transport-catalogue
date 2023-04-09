@@ -7,52 +7,52 @@
 #include <vector>
 
 namespace json {
-
     class Node;
 
     using Dict = std::map<std::string, Node>;
     using Array = std::vector<Node>;
 
     class ParsingError : public std::runtime_error {
-    public:
-        using runtime_error::runtime_error;
+        public:
+            using runtime_error::runtime_error;
     };
 
     class Node final : private std::variant<std::nullptr_t, bool, int, double, std::string, Dict, Array> {
-    public:
-        using variant::variant;
-        using Value = variant;
+        public:
+            using variant::variant;
+            using Value = variant;
 
-        bool IsNull() const;
-        bool IsBool() const;
-        bool IsInt() const;
-        bool IsDouble() const;
-        bool IsPureDouble() const;
-        bool IsString() const;
-        bool IsArray() const;
-        bool IsMap() const;
+            bool IsNull() const;
+            bool IsBool() const;
+            bool IsInt() const;
+            bool IsDouble() const;
+            bool IsPureDouble() const;
+            bool IsString() const;
+            bool IsArray() const;
+            bool IsMap() const;
+            const Value& GetValue() const;
+            bool AsBool() const;
+            int AsInt() const;
+            double AsDouble() const;
+            const std::string& AsString() const;
+            const Array& AsArray() const;
+            const Dict& AsMap() const;
 
-        const Value& GetValue() const;
-        bool AsBool() const;
-        int AsInt() const;
-        double AsDouble() const;
-        const std::string& AsString() const;
-        const Array& AsArray() const;
-        const Dict& AsMap() const;
-
-        friend bool operator==(const Node& left, const Node& right);
-        friend bool operator!=(const Node& left, const Node& right);
+            friend bool operator==(const Node& left, const Node& right);
+            friend bool operator!=(const Node& left, const Node& right);
     };
 
     class Document {
-    public:
-        explicit Document(Node root);
-        [[nodiscard]] const Node& GetRoot() const;
-        friend bool operator==(const Document& left, const Document& right);
-        friend bool operator!=(const Document& left, const Document& right);
+        public:
+            explicit Document(Node root);
+            
+            [[nodiscard]] const Node& GetRoot() const;
 
-    private:
-        Node root_;
+            friend bool operator==(const Document& left, const Document& right);
+            friend bool operator!=(const Document& left, const Document& right);
+
+        private:
+            Node root_;
     };
 
     Document Load(std::istream& input);
