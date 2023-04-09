@@ -177,7 +177,7 @@ namespace parser {
         return catalogue;
     }
 
-    renderer::Visualization ParseVisualizationSettings(const json::Dict& settings) {
+    renderer::Visualization ParseRenderSettings(const json::Dict& settings) {
         renderer::Visualization final_settings;
 
         double line_width = settings.at("line_width"s).AsDouble();
