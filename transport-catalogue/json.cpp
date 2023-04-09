@@ -57,28 +57,25 @@ namespace json {
 
             void operator()(const Dict& map) const {
                 out << '{';
-                int id{0};
-                for (const auto& [key, value] : map) {
-                    if (id++ != 0)
+                for (auto it = map.begin(); it != map.end(); ++it) {
+                    if (it != map.begin()) {
                         out << ", "s;
-                    std::visit(NodeContainerPrinter{out}, Node{key}.GetValue());
+                    }
+                    std::visit(NodeContainerPrinter{out}, Node{it->first}.GetValue());
                     out << ':';
-                    std::visit(NodeContainerPrinter{out}, value.GetValue());
+                    std::visit(NodeContainerPrinter{out}, it->second.GetValue());
                 }
                 out << '}';
             }
             
             void operator()(const Array& array) const {
                 out << '[';
-
-                int id{0};
-                for (const auto& value : array) {
-                    if (id++ != 0)
+                for (auto it = array.begin(); it != array.end(); ++it) {
+                    if (it != array.begin()) {
                         out << ", "s;
-                    std::visit(NodeContainerPrinter{out}, value.GetValue());
+                    }
+                    std::visit(NodeContainerPrinter{out}, it->GetValue());
                 }
-
-                out << ']';
             }
         };
 
@@ -231,8 +228,7 @@ namespace json {
                             result.push_back('\\');
                             break;
                         default:
-                            throw ParsingError("Incorrect input String for parsing. Unknown escape current \\"s +
-                                            escape_symbol);
+                            throw ParsingError("Incorrect input String for parsing. Unknown escape current \\"s + escape_symbol);
                     }
                 } else if (current == '\n' || current == '\r') {
                     throw ParsingError("Incorrect input String for parsing. Unexpected EOF"s);
