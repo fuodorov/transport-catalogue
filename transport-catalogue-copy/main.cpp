@@ -1,6 +1,6 @@
 #include <string>
 
-#include "json_reader.h"
+#include "parser.h"
 
 using namespace catalogue;
 using namespace std::literals;
@@ -9,10 +9,10 @@ void JsonQueriesEngine(std::istream& input, std::ostream& output) {
     const auto json = json::Load(input).GetRoot();
     TransportCatalogue catalogue;
 
-    auto response = request::MakeStatResponse(
-        request::ProcessBaseRequest(json.AsMap().at("base_requests"s).AsArray()), 
+    auto response = parser::MakeStatResponse(
+        parser::ProcessBaseRequest(json.AsMap().at("base_requests"s).AsArray()), 
         json.AsMap().at("stat_requests"s).AsArray(), 
-        request::ParseVisualizationSettings(json.AsMap().at("render_settings"s).AsMap())
+        parser::ParseVisualizationSettings(json.AsMap().at("render_settings"s).AsMap())
     );
 
     json::Print(json::Document{std::move(response)}, output);

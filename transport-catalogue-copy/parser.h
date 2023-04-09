@@ -6,10 +6,10 @@
  */
 
 #include "json.h"
-#include "map_renderer.h"
+#include "renderer.h"
 #include "catalogue.h"
 
-namespace request {
+namespace parser {
 
 catalogue::TransportCatalogue ProcessBaseRequest(const json::Array& requests);
 
@@ -18,4 +18,4 @@ render::Visualization ParseVisualizationSettings(const json::Dict& settings);
 json::Node MakeStatResponse(const catalogue::TransportCatalogue& catalogue, const json::Array& requests,
                             const render::Visualization& settings);
 
-}  // namespace request
+}  // namespace parser

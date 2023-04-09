@@ -1,4 +1,4 @@
-#include "map_renderer.h"
+#include "renderer.h"
 
 #include <algorithm>
 #include <fstream>

@@ -1,11 +1,11 @@
-#include "json_reader.h"
+#include "parser.h"
 
 #include <string>
 
-namespace request {
+namespace parser {
 
 using namespace catalogue;
-using namespace request;
+using namespace parser;
 
 using namespace std::literals;
 
@@ -241,4 +241,4 @@ json::Node MakeStatResponse(const TransportCatalogue& catalogue, const json::Arr
     return response;
 }
 
-}  // namespace request
+}  // namespace parser
