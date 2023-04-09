@@ -1,19 +1,19 @@
 #pragma once
 
-/*
- * Description: Announces coordinates on the earth's surface and
- * calculates the distance between them
- */
-
 #include <cmath>
 
+#include "constants.h"
+
 namespace geo {
+    struct Coordinates {
+        double lat, lng;
+    };
 
-struct Coordinates {
-    double lat{0.};
-    double lng{0.};
-};
-
-double ComputeDistance(Coordinates from, Coordinates to);
-
+    inline double ComputeDistance(Coordinates from, Coordinates to) {
+        using namespace constants;
+        using namespace std;
+        return EARTH_RADIUS * acos(sin(from.lat * DEG_TO_RAD) * sin(to.lat * DEG_TO_RAD) +
+                                   cos(from.lat * DEG_TO_RAD) * cos(to.lat * DEG_TO_RAD) *
+                                       cos(abs(from.lng - to.lng) * DEG_TO_RAD));
+    }
 }  // namespace geo
