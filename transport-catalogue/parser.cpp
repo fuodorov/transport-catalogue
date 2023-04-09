@@ -1,140 +1,128 @@
 #include "parser.h"
 
-#include <cassert>
-#include <regex>
+#include <string>
 
-
-namespace catalogue::parser {
-    using namespace std::literals;
+namespace parser {
     using namespace catalogue;
+    using namespace parser;
+    using namespace std::literals;
 
-    std::string_view RemoveFirstWord(std::string_view text) {
-        size_t word_end = text.find(" "sv);
-        return text.substr(word_end + (" "sv).size(), text.size() - word_end);
-    }
-
-    Distances ParseDistances(std::string_view text) {
-        Distances result;
-
-        std::regex distance_regex(R"(, ([\d.]+)m to ([\w ]+))");
-        std::smatch match;
-        std::string text_copy = text.data();
-        
-        int math_initial_position = 0;
-        while (std::regex_search(text_copy, match, distance_regex)) {
-            std::string_view stop_to = text.substr(math_initial_position + match.position(2), match.length(2));
-            int distance = std::stoi(std::string(match[1]));
-            result.emplace_back(stop_to, distance);
-            text_copy = match.suffix();
-            math_initial_position += match.position(0) + match.length(0);
+    namespace {
+        std::pair<catalogue::Stop, bool> ParseBusStopInput(const json::Dict& info) {
+            Stop stop;
+            stop.name = info.at("name"s).AsString();
+            stop.point.lat = info.at("latitude"s).AsDouble();
+            stop.point.lng = info.at("longitude"s).AsDouble();
+            return {std::move(stop), !info.at("road_distances"s).AsMap().empty()};
         }
 
-        return result;
-    }
+        Bus ParseBusRouteInput(const json::Dict& info) {
+            Bus bus;
+            bus.number = info.at("name"s).AsString();
+            bus.type = info.at("is_roundtrip"s).AsBool() ? RouteType::CIRCLE : RouteType::TWO_DIRECTIONAL;
 
-    std::pair<catalogue::Stop, bool> ParseCoordinates(const std::string& text) {
-        Stop stop;
+            const auto& stops = info.at("stops"s).AsArray();
+            bus.stops.reserve(stops.size());
 
-        std::regex stop_regex(R"(Stop ([\w ]+)?: ([\d.]+), ([\d.]+)(, [\d.]+m to [\w ]+)*$)");
-        std::smatch match;
-        std::regex_match(text, match, stop_regex);
-        
-        stop.name = match[1];
-        stop.point.lat = std::stod(match[2]);
-        stop.point.lng = std::stod(match[3]);
+            for (const auto& stop : stops)
+                bus.stops.emplace_back(stop.AsString());
 
-        return {std::move(stop), match[4].matched};
-    }
+            bus.unique_stops = {bus.stops.begin(), bus.stops.end()};
 
-    std::vector<std::string_view> Split(std::string_view text, std::string_view separator) {
-        std::vector<std::string_view> result;
-
-        size_t word_begin = 0;
-        while (word_begin < text.size()) {
-            size_t word_end = text.find(separator, word_begin);
-            result.push_back(text.substr(word_begin, word_end - word_begin));
-            word_begin = (word_end == std::string_view::npos) ? word_end : word_end + separator.size();
+            return bus;
         }
 
-        return result;
-    }
+        renderer::Screen ParseScreenSettings(const json::Dict& settings) {
+            return renderer::Screen{settings.at("width"s).AsDouble(), settings.at("height"s).AsDouble(), settings.at("padding"s).AsDouble()};
+        }
 
-    Bus ParseRoutes(std::string_view text) {
-        Bus result;
+        renderer::Label ParseLabelSettings(const json::Dict& settings, const std::string& key_type) {
+            const json::Array offset = settings.at(key_type + "_label_offset"s).AsArray();
+            return {settings.at(key_type + "_label_font_size"s).AsInt(), {offset.at(0).AsDouble(), offset.at(1).AsDouble()}};
+        }
 
-        result.number = RemoveFirstWord(text.substr(0, text.find(": "sv)));
-        result.type = (text.find(" > "sv) != std::string_view::npos) ? RouteType::CIRCLE : RouteType::TWO_DIRECTIONAL;
-        result.stops = Split(text.substr(text.find(": "sv) + (": "sv).size()), (result.type == RouteType::CIRCLE) ? " > "sv : " - "sv);
-        result.unique_stops = {result.stops.begin(), result.stops.end()};
+        svg::Color ParseColor(const json::Node& node) {
+            if (node.IsString()){
+                return svg::Color(node.AsString());
+            }
 
-        return result;
-    }
+            const auto& array = node.AsArray();
 
-    void FillQueries(TransportCatalogue &catalogue, std::istream &input_stream, int count, std::vector<std::string> &queries, std::vector<std::pair<std::string, std::string>> &distances) {
-        std::string query;
-        for (int i = 0; i < count; ++i) {
-            std::getline(input_stream, query);
-            if (query.substr(0, 4) == "Stop"s) {
-                auto [stop, is_store_query] = ParseCoordinates(query);
-                if (is_store_query) {
-                    distances.emplace_back(stop.name, std::move(query));
-                }
+            if (array.size() == 3) {
+                return svg::Rgb(array.at(0).AsInt(), array.at(1).AsInt(), array.at(2).AsInt());
+            } else {
+                return svg::Rgba(array.at(0).AsInt(), array.at(1).AsInt(), array.at(2).AsInt(), array.at(3).AsDouble());
+            }
+
+        }
+
+        renderer::UnderLayer ParseLayer(const json::Dict& settings) {
+            return renderer::UnderLayer{ParseColor(settings.at("underlayer_color"s)), settings.at("underlayer_width"s).AsDouble()};
+        }
+
+    }  // namespace
+
+    TransportCatalogue ParseQueries(const json::Array& requests) {
+        TransportCatalogue catalogue;
+
+        std::vector<int> requests_ids_with_road_distances;
+        requests_ids_with_road_distances.reserve(requests.size());
+
+        std::vector<int> requests_ids_with_buses;
+        requests_ids_with_buses.reserve(requests.size());
+
+        for (int id = 0; id != static_cast<int>(requests.size()); ++id) {
+            const auto& request_dict_view = requests.at(id).AsMap();
+
+            if (request_dict_view.at("type"s) == "Stop"s) {
+                auto [stop, has_road_distances] = ParseBusStopInput(request_dict_view);
+                if (has_road_distances)
+                    requests_ids_with_road_distances.emplace_back(id);
+
                 catalogue.AddStop(std::move(stop));
-            } else if (query.substr(0, 3) == "Bus"s) {
-                queries.emplace_back(std::move(query));
+            } else if (request_dict_view.at("type"s) == "Bus"s) {
+                requests_ids_with_buses.emplace_back(id);
             }
         }
+
+        for (int id : requests_ids_with_road_distances) {
+            const auto& request_dict_view = requests.at(id).AsMap();
+
+            std::string_view stop_from = request_dict_view.at("name"s).AsString();
+            for (const auto& [stop_to, distance] : request_dict_view.at("road_distances"s).AsMap())
+                catalogue.AddDistance(stop_from, stop_to, distance.AsInt());
+        }
+
+        for (int id : requests_ids_with_buses) {
+            const auto& request_dict_view = requests.at(id).AsMap();
+            catalogue.AddBus(ParseBusRouteInput(request_dict_view));
+        }
+
+        return catalogue;
     }
 
-    void ParseQueries(TransportCatalogue &catalogue, std::istream &input_stream, std::ostream &output_stream) {
-        int count{0};
-        input_stream >> count;
-        input_stream.get();
+    renderer::Visualization ParseRenderSettings(const json::Dict& settings) {
+        renderer::Visualization final_settings;
 
-        std::vector<std::string> queries;
-        std::vector<std::pair<std::string, std::string>> distances;
-        queries.reserve(count);
-        distances.reserve(count);
+        double line_width = settings.at("line_width"s).AsDouble();
+        double stop_radius = settings.at("stop_radius"s).AsDouble();
+        const auto& colors = settings.at("color_palette"s).AsArray();
+        std::vector<svg::Color> svg_colors;
+        svg_colors.reserve(colors.size());
 
-        FillQueries(catalogue, input_stream, count, queries, distances);
-
-        for (const auto& [from, query] : distances) {
-            for (auto [to, distance] : ParseDistances(query))
-                catalogue.AddDistance(from, to, distance);
+        for (const auto& color : colors) {
+            svg_colors.emplace_back(ParseColor(color));
         }
 
-        for (const auto& query : queries) {
-            catalogue.AddBus(ParseRoutes(query));
-        }
+        final_settings.SetScreen(ParseScreenSettings(settings))
+            .SetLineWidth(line_width)
+            .SetStopRadius(stop_radius)
+            .SetLabels(renderer::LabelType::Stop, ParseLabelSettings(settings, "stop"s))
+            .SetLabels(renderer::LabelType::Bus, ParseLabelSettings(settings, "bus"s))
+            .SetUnderLayer(ParseLayer(settings))
+            .SetColors(std::move(svg_colors));
 
-        input_stream >> count;
-        input_stream.get();
-        std::string query;
-        for (int i = 0; i < count; ++i) {
-            std::getline(input_stream, query);
-            std::string_view info = RemoveFirstWord(query);
-            if (query.substr(0, 3) == "Bus"s) {
-                if (auto statistics = catalogue.GetBusStat(info)) {
-                    output_stream << *statistics << std::endl;
-                } else {
-                    output_stream << "Bus " << info << ": not found" << std::endl;
-                }
-            } else if (query.substr(0, 4) == "Stop"s) {
-                auto* buses = catalogue.GetBusPassStop(info);
-
-                if (!buses) {
-                    output_stream << "Stop " << info << ": not found" << std::endl;
-                } else if (buses->empty()) {
-                    output_stream << "Stop " << info << ": no buses" << std::endl;
-                } else {
-                    output_stream << "Stop " << info << ": buses";
-                    for (const auto& bus : *buses) {
-                        output_stream << " " << bus;
-                    }
-                    output_stream << std::endl;
-                }
-            }
-        }
+        return final_settings;
     }
 
-}  // namespace catalogue::parser
+}  // namespace parser
