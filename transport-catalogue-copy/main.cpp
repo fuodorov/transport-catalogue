@@ -1,6 +1,7 @@
 #include <string>
 
 #include "parser.h"
+#include "builder.h"
 
 void JsonQueriesEngine(std::istream& input, std::ostream& output) {
     using namespace catalogue;
@@ -9,7 +10,7 @@ void JsonQueriesEngine(std::istream& input, std::ostream& output) {
     const auto json = json::Load(input).GetRoot();
     TransportCatalogue catalogue;
 
-    auto response = parser::MakeStatResponse(
+    auto response = builder::BuildStatResponse(
         parser::ParseQueries(json.AsMap().at("base_requests"s).AsArray()), 
         json.AsMap().at("stat_requests"s).AsArray(), 
         parser::ParseRenderSettings(json.AsMap().at("render_settings"s).AsMap())
