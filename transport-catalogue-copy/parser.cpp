@@ -13,19 +13,14 @@ namespace parser {
 
         std::pair<catalogue::Stop, bool> ParseBusStopInput(const json::Dict& info) {
             Stop stop;
-
             stop.name = info.at("name"s).AsString();
             stop.point.lat = info.at("latitude"s).AsDouble();
             stop.point.lng = info.at("longitude"s).AsDouble();
-
-            bool has_road_distances = !info.at("road_distances"s).AsMap().empty();
-
-            return {std::move(stop), has_road_distances};
+            return {std::move(stop), !info.at("road_distances"s).AsMap().empty()};
         }
 
         Bus ParseBusRouteInput(const json::Dict& info) {
             Bus bus;
-
             bus.number = info.at("name"s).AsString();
             bus.type = info.at("is_roundtrip"s).AsBool() ? RouteType::CIRCLE : RouteType::TWO_DIRECTIONAL;
 
@@ -42,98 +37,57 @@ namespace parser {
 
         json::Node MakeBusResponse(int request_id, const BusStat& statistics) {
             json::Dict response;
-
-            // P.S. no need to use std::move() because all types on the right are trivial
             response.emplace("curvature"s, statistics.curvature);
             response.emplace("request_id"s, request_id);
             response.emplace("route_length"s, statistics.route_length);
             response.emplace("stop_count"s, static_cast<int>(statistics.stops_count));
             response.emplace("unique_stop_count"s, static_cast<int>(statistics.unique_stops_count));
-
             return response;
         }
 
         json::Node MakeStopResponse(int request_id, const std::set<std::string_view>& buses) {
-            json::Dict response;
-
-            response.emplace("request_id"s, request_id);
-
             json::Array buses_array;
             buses_array.reserve(buses.size());
-            for (std::string_view bus : buses)
+            for (std::string_view bus : buses) {
                 buses_array.emplace_back(std::string(bus));
-
-            response.emplace("buses"s, std::move(buses_array));
-
-            return response;
+            }
+            return json::Dict{{"request_id"s, request_id}, {"buses"s, std::move(buses_array)}};
         }
 
         json::Node MakeErrorResponse(int request_id) {
-            json::Dict response;
-
-            response.emplace("request_id"s, request_id);
-            response.emplace("error_message"s, "not found"s);
-
-            return response;
+            return json::Dict{{"request_id"s, request_id}, {"error_message"s, "not found"s}};
         }
 
         json::Node MakeMapImageResponse(int request_id, const std::string& image) {
-            json::Dict response;
-
-            response.emplace("request_id"s, request_id);
-            response.emplace("map"s, image);
-
-            return response;
+            return json::Dict{{"request_id"s, request_id}, {"map"s, image}};
         }
 
-        /* METHODS FOR MAP IMAGE RENDERING */
-
         renderer::Screen ParseScreenSettings(const json::Dict& settings) {
-            renderer::Screen screen;
-
-            screen.width_ = settings.at("width"s).AsDouble();
-            screen.height_ = settings.at("height"s).AsDouble();
-            screen.padding_ = settings.at("padding"s).AsDouble();
-
-            return screen;
+            return renderer::Screen{settings.at("width"s).AsDouble(), settings.at("height"s).AsDouble(), settings.at("padding"s).AsDouble()};
         }
 
         renderer::Label ParseLabelSettings(const json::Dict& settings, const std::string& key_type) {
-            int font_size = settings.at(key_type + "_label_font_size"s).AsInt();
             const json::Array offset = settings.at(key_type + "_label_offset"s).AsArray();
-
-            double offset_x = offset.at(0).AsDouble();
-            double offset_y = offset.at(1).AsDouble();
-
-            return {font_size, {offset_x, offset_y}};
+            return {settings.at(key_type + "_label_font_size"s).AsInt(), {offset.at(0).AsDouble(), offset.at(1).AsDouble()}};
         }
 
         svg::Color ParseColor(const json::Node& node) {
-            // Node with color could be: string, rgb, rgba
-            if (node.IsString())
-                return node.AsString();
+            if (node.IsString()){
+                return svg::Color(node.AsString());
+            }
 
             const auto& array = node.AsArray();
-            uint8_t red = array.at(0).AsInt();
-            uint8_t green = array.at(1).AsInt();
-            uint8_t blue = array.at(2).AsInt();
 
-            // In case there is only 3 colors in the array - it is egb
-            if (array.size() == 3)
-                return svg::Rgb(red, green, blue);
+            if (array.size() == 3) {
+                return svg::Rgb(array.at(0).AsInt(), array.at(1).AsInt(), array.at(2).AsInt());
+            } else {
+                return svg::Rgba(array.at(0).AsInt(), array.at(1).AsInt(), array.at(2).AsInt(), array.at(3).AsDouble());
+            }
 
-            // Otherwise - this is rgba
-            double alpha = array.at(3).AsDouble();
-            return svg::Rgba(red, green, blue, alpha);
         }
 
         renderer::UnderLayer ParseLayer(const json::Dict& settings) {
-            renderer::UnderLayer layer;
-
-            layer.color_ = ParseColor(settings.at("underlayer_color"s));
-            layer.width_ = settings.at("underlayer_width"s).AsDouble();
-
-            return layer;
+            return renderer::UnderLayer{ParseColor(settings.at("underlayer_color"s)), settings.at("underlayer_width"s).AsDouble()};
         }
 
     }  // namespace
@@ -182,12 +136,13 @@ namespace parser {
 
         double line_width = settings.at("line_width"s).AsDouble();
         double stop_radius = settings.at("stop_radius"s).AsDouble();
-
         const auto& colors = settings.at("color_palette"s).AsArray();
         std::vector<svg::Color> svg_colors;
         svg_colors.reserve(colors.size());
-        for (const auto& color : colors)
+
+        for (const auto& color : colors) {
             svg_colors.emplace_back(ParseColor(color));
+        }
 
         final_settings.SetScreen(ParseScreenSettings(settings))
             .SetLineWidth(line_width)
