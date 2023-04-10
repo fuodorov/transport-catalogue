@@ -1,10 +1,5 @@
 #pragma once
 
-/*
- * Description: provide an interface for correct JSON file creation
- * TODO: Main changes of sprint-11. For review
- */
-
 #include <memory>
 #include <optional>
 #include <queue>
@@ -13,108 +8,80 @@
 
 namespace json {
 
-class Builder;
-class DictContext;
-class ArrayContext;
-class ValueContext;
+    class Builder;
 
-/* BASE CONTEXT */
+    class DictContext;
 
-/*
- * Contexts below provides interfaces for the correct JSON creation.
- * For example, they do not allow the creation of JSON: {"name", [ } and many others.
- * Idea: create context + add only necessary methods to it, so that when user call for wrong method, he will get a
- * compilation error.
- */
+    class ArrayContext;
+    
+    class ValueContext;
 
-class BaseContext {
-public:  // Constructor
-    explicit BaseContext(Builder& builder);
+    class BaseContext {
+        public: 
+            explicit BaseContext(Builder& builder);
 
-protected:  // Fields
-    Builder& builder_;
-};
+        protected:
+            Builder& builder_;
+    };
 
-class StartContainersContext : public BaseContext {
-public:  // Constructor
-    explicit StartContainersContext(Builder& builder);
+    class StartContainersContext : public BaseContext {
+        public:
+            explicit StartContainersContext(Builder& builder);
 
-public:  // Fields
-    ArrayContext& StartArray();
-    DictContext& StartDict();
-};
+            ArrayContext& StartArray();
+            DictContext& StartDict();
+    };
 
-/* JSON CONTEXTS */
+    class KeyContext : public StartContainersContext {
+        public:
+            explicit KeyContext(Builder& builder);
 
-class KeyContext : public StartContainersContext {
-    /* Methods: Value | StartDict, StartArray */
-public:  // Constructor
-    explicit KeyContext(Builder& builder);
+            ValueContext Value(Node::Value value);
+    };
 
-public:  // Methods
-    ValueContext Value(Node::Value value);
-};
+    class ValueContext : public BaseContext {
+        public:
+            explicit ValueContext(Builder& builder);
 
-class ValueContext : public BaseContext {
-    /* Methods: Key, EndDict : dict value call*/
-public:  // Constructor
-    explicit ValueContext(Builder& builder);
+            KeyContext& Key(std::string key);
+            Builder& EndDict();
+    };
 
-public:  // Methods
-    KeyContext& Key(std::string key);
-    Builder& EndDict();
-};
+    class DictContext : public BaseContext {
+        public:
+            explicit DictContext(Builder& builder);
 
-class DictContext : public BaseContext {
-    /* Methods: Key, EndDict */
-public:  // Constructor
-    explicit DictContext(Builder& builder);
+            KeyContext& Key(std::string key);
+            Builder& EndDict();
+    };
 
-public:  // Methods
-    KeyContext& Key(std::string key);
-    Builder& EndDict();
-};
+    class ArrayContext : public StartContainersContext {
+        public:
+            explicit ArrayContext(Builder& builder);
 
-class ArrayContext : public StartContainersContext {
-    /* Methods: Value, EndArray | StartDict, StartArray */
-public:  // Constructor
-    explicit ArrayContext(Builder& builder);
+            ArrayContext& Value(Node::Value value);
+            Builder& EndArray();
+    };
 
-public:  // Methods
-    ArrayContext& Value(Node::Value value);
-    Builder& EndArray();
-};
+    class Builder final : virtual public KeyContext, virtual public ValueContext, virtual public DictContext, virtual public ArrayContext {
+        public:
+            Builder();
 
-/* BUILDER */
+            KeyContext& Key(std::string key);
+            DictContext& StartDict();
+            ArrayContext& StartArray();
+            
+            Builder& Value(Node::Value value);
+            Builder& EndDict();
+            Builder& EndArray();
 
-/// Provides the interface for the correct JSON creation.
-/// @throws std::logical_error in case of incorrect attempt of JSON creation
-class Builder final : virtual public KeyContext,
-                      virtual public ValueContext,
-                      virtual public DictContext,
-                      virtual public ArrayContext {
-public:  // Constructor
-    Builder();
+            const Node& Build() const;
 
-public:  // Methods
-    KeyContext& Key(std::string key);
-    Builder& Value(Node::Value value);
+        private:
+            [[nodiscard]] bool CouldAddNode() const;
+            void AddNode(Node top_node);
 
-    DictContext& StartDict();
-    Builder& EndDict();
-
-    ArrayContext& StartArray();
-    Builder& EndArray();
-
-    const Node& Build() const;
-
-private:  // Methods
-    [[nodiscard]] bool CouldAddNode() const;
-
-    void AddNode(Node top_node);
-
-private:  // Fields
-    Node root_{nullptr};
-    std::vector<std::unique_ptr<Node>> nodes_stack_;
-};
+            Node root_{nullptr};
+            std::vector<std::unique_ptr<Node>> stack_;
+    };
 }  // namespace json
