@@ -24,19 +24,13 @@ namespace json {
             Builder& builder_;
     };
 
-    class StartContainersContext : public BaseContext {
-        public:
-            explicit StartContainersContext(Builder& builder);
-
-            ArrayContext& StartArray();
-            DictContext& StartDict();
-    };
-
-    class KeyContext : public StartContainersContext {
+    class KeyContext : public BaseContext {
         public:
             explicit KeyContext(Builder& builder);
 
             ValueContext Value(Node::Value value);
+            ArrayContext& StartArray();
+            DictContext& StartDict();
     };
 
     class ValueContext : public BaseContext {
@@ -55,12 +49,14 @@ namespace json {
             Builder& EndDict();
     };
 
-    class ArrayContext : public StartContainersContext {
+    class ArrayContext : public BaseContext {
         public:
             explicit ArrayContext(Builder& builder);
 
             ArrayContext& Value(Node::Value value);
             Builder& EndArray();
+            ArrayContext& StartArray();
+            DictContext& StartDict();
     };
 
     class Builder final : virtual public KeyContext, virtual public ValueContext, virtual public DictContext, virtual public ArrayContext {

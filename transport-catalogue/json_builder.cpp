@@ -3,13 +3,11 @@
 namespace json {
     BaseContext::BaseContext(Builder& builder) : builder_(builder) {}
 
-    StartContainersContext::StartContainersContext(Builder& builder) : BaseContext(builder) {}
+    KeyContext::KeyContext(Builder& builder) : BaseContext(builder) {}
 
-    ArrayContext& StartContainersContext::StartArray() {return builder_.StartArray();}
+    ArrayContext& KeyContext::StartArray() {return builder_.StartArray();}
 
-    DictContext& StartContainersContext::StartDict() {return builder_.StartDict();}
-
-    KeyContext::KeyContext(Builder& builder) : StartContainersContext(builder) {}
+    DictContext& KeyContext::StartDict() {return builder_.StartDict();}
 
     ValueContext KeyContext::Value(Node::Value value) {return builder_.Value(std::move(value));}
 
@@ -25,7 +23,11 @@ namespace json {
 
     Builder& DictContext::EndDict() {return builder_.EndDict();}
 
-    ArrayContext::ArrayContext(Builder& builder) : StartContainersContext(builder) {}
+    ArrayContext::ArrayContext(Builder& builder) : BaseContext(builder) {}
+
+    ArrayContext& ArrayContext::StartArray() {return builder_.StartArray();}
+
+    DictContext& ArrayContext::StartDict() {return builder_.StartDict();}
 
     ArrayContext& ArrayContext::Value(Node::Value value) {return builder_.Value(std::move(value));}
 
