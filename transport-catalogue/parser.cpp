@@ -13,7 +13,7 @@ namespace parser {
             stop.name = info.at("name"s).AsString();
             stop.point.lat = info.at("latitude"s).AsDouble();
             stop.point.lng = info.at("longitude"s).AsDouble();
-            return {std::move(stop), !info.at("road_distances"s).AsMap().empty()};
+            return {std::move(stop), !info.at("road_distances"s).AsDict().empty()};
         }
 
         Bus ParseBusRouteInput(const json::Dict& info) {
@@ -72,7 +72,7 @@ namespace parser {
         requests_ids_with_buses.reserve(requests.size());
 
         for (int id = 0; id != static_cast<int>(requests.size()); ++id) {
-            const auto& request_dict_view = requests.at(id).AsMap();
+            const auto& request_dict_view = requests.at(id).AsDict();
 
             if (request_dict_view.at("type"s) == "Stop"s) {
                 auto [stop, has_road_distances] = ParseBusStopInput(request_dict_view);
@@ -86,15 +86,15 @@ namespace parser {
         }
 
         for (int id : requests_ids_with_road_distances) {
-            const auto& request_dict_view = requests.at(id).AsMap();
+            const auto& request_dict_view = requests.at(id).AsDict();
 
             std::string_view stop_from = request_dict_view.at("name"s).AsString();
-            for (const auto& [stop_to, distance] : request_dict_view.at("road_distances"s).AsMap())
+            for (const auto& [stop_to, distance] : request_dict_view.at("road_distances"s).AsDict())
                 catalogue.AddDistance(stop_from, stop_to, distance.AsInt());
         }
 
         for (int id : requests_ids_with_buses) {
-            const auto& request_dict_view = requests.at(id).AsMap();
+            const auto& request_dict_view = requests.at(id).AsDict();
             catalogue.AddBus(ParseBusRouteInput(request_dict_view));
         }
 

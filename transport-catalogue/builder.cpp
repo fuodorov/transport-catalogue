@@ -2,73 +2,84 @@
 
 #include <string>
 
+#include "json_builder.h"
+
 namespace builder {
     using namespace catalogue;
     using namespace std::literals;
 
     namespace {
-        json::Node BuildBusResponse(int request_id, const BusStat& statistics) {
-            json::Dict response;
-            response.emplace("curvature"s, statistics.curvature);
-            response.emplace("request_id"s, request_id);
-            response.emplace("route_length"s, statistics.route_length);
-            response.emplace("stop_count"s, static_cast<int>(statistics.stops_count));
-            response.emplace("unique_stop_count"s, static_cast<int>(statistics.unique_stops_count));
-            return response;
+        void BuildBusResponse(int request_id, const BusStat& statistics, json::Builder& response) {
+            response.StartDict();
+            response.Key("curvature"s).Value(statistics.curvature);
+            response.Key("request_id"s).Value(request_id);
+            response.Key("route_length"s).Value(statistics.route_length);
+            response.Key("stop_count"s).Value(static_cast<int>(statistics.stops_count));
+            response.Key("unique_stop_count"s).Value(static_cast<int>(statistics.unique_stops_count));
+            response.EndDict();
         }
 
-        json::Node BuildStopResponse(int request_id, const std::set<std::string_view>& buses) {
-            json::Array buses_array;
-            buses_array.reserve(buses.size());
-            for (std::string_view bus : buses) {
-                buses_array.emplace_back(std::string(bus));
-            }
-            return json::Dict{{"request_id"s, request_id}, {"buses"s, std::move(buses_array)}};
+        void BuildStopResponse(int request_id, const std::set<std::string_view>& buses, json::Builder& response) {
+            response.StartDict();
+            response.Key("request_id"s).Value(request_id);
+
+            response.Key("buses"s).StartArray();
+            for (std::string_view bus : buses)
+                response.Value(std::string(bus));
+            response.EndArray();
+
+            response.EndDict();
         }
 
-        json::Node BuildErrorResponse(int request_id) {
-            return json::Dict{{"request_id"s, request_id}, {"error_message"s, "not found"s}};
+        void BuildErrorResponse(int request_id, json::Builder& response) {
+            response.StartDict();
+            response.Key("request_id"s).Value(request_id);
+            response.Key("error_message"s).Value("not found"s);
+            response.EndDict();
         }
 
-        json::Node BuildMapResponse(int request_id, const std::string& image) {
-            return json::Dict{{"request_id"s, request_id}, {"map"s, image}};
+        void BuildMapResponse(int request_id, const std::string& image, json::Builder& response) {
+            response.StartDict();
+            response.Key("request_id"s).Value(request_id);
+            response.Key("map"s).Value(image);
+            response.EndDict();
         }
 
     }  // namespace
 
-    json::Node BuildResponse(const TransportCatalogue& catalogue, const json::Array& requests,
-                                const renderer::Visualization& settings) {
-        json::Array response;
-        response.reserve(requests.size());
+    json::Node BuildResponse(const TransportCatalogue& catalogue, const json::Array& requests, const renderer::Visualization& settings) {
+        auto response = json::Builder();
+        response.StartArray();
 
         for (const auto& request : requests) {
-            const auto& request_dict_view = request.AsMap();
+            const auto& request_dict_view = request.AsDict();
 
             int request_id = request_dict_view.at("id"s).AsInt();
             std::string type = request_dict_view.at("type"s).AsString();
-            std::string name;
+            std::string name;  //> Could be a name of bus or a stop
 
             if (type == "Bus"s) {
                 name = request_dict_view.at("name"s).AsString();
 
                 if (auto bus_statistics = catalogue.GetBusStat(name)) {
-                    response.emplace_back(BuildBusResponse(request_id, *bus_statistics));
+                    BuildBusResponse(request_id, *bus_statistics, response);
                 } else {
-                    response.emplace_back(BuildErrorResponse(request_id));
+                    BuildErrorResponse(request_id, response);
                 }
             } else if (type == "Stop"s) {
                 name = request_dict_view.at("name"s).AsString();
                 if (auto buses = catalogue.GetBusesPassingThroughTheStop(name)) {
-                    response.emplace_back(BuildStopResponse(request_id, *buses));
+                    BuildStopResponse(request_id, *buses, response);
                 } else {
-                    response.emplace_back(BuildErrorResponse(request_id));
+                    BuildErrorResponse(request_id, response);
                 }
             } else if (type == "Map"s) {
                 std::string image = RenderTransportMap(catalogue, settings);
-                response.emplace_back(BuildMapResponse(request_id, image));
+                BuildMapResponse(request_id, image, response);
             }
         }
 
-        return response;
+        response.EndArray();
+        return std::move(response.Build());
     }
 }  // namespace builder
