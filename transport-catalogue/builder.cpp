@@ -10,19 +10,31 @@ namespace builder {
 
     namespace {
         void BuildBusResponse(int request_id, const BusStat& statistics, json::Builder& json) {
-            json.StartDict().Key("request_id"s).Value(request_id).Key("route_length"s).Value(statistics.route_length).Key("curvature"s).Value(statistics.curvature).Key("stop_count"s).Value(static_cast<int>(statistics.stops_count)).Key("unique_stop_count"s).Value(static_cast<int>(statistics.unique_stops_count)).EndDict();
+            json.StartDict()
+                .Key("request_id"s).Value(request_id)
+                .Key("route_length"s).Value(statistics.route_length)
+                .Key("curvature"s).Value(statistics.curvature)
+                .Key("stop_count"s).Value(static_cast<int>(statistics.stops_count))
+                .Key("unique_stop_count"s).Value(static_cast<int>(statistics.unique_stops_count))
+                .EndDict();
         }
 
         void BuildStopResponse(int request_id, const std::set<std::string_view>& buses, json::Builder& json) {
-            json.StartDict().Key("request_id"s).Value(request_id).Key("buses"s).StartArray();
+            json.StartDict()
+                .Key("request_id"s).Value(request_id)
+                .Key("buses"s).StartArray();
             for (std::string_view bus : buses) {
                 json.Value(std::string(bus));
             }
-            json.EndArray().EndDict();
+            json.EndArray()
+                .EndDict();
         }
 
         void BuildErrorResponse(int request_id, json::Builder& json) {
-            json.StartDict().Key("request_id"s).Value(request_id).Key("error_message"s).Value("not found"s).EndDict();
+            json.StartDict()
+                .Key("request_id"s).Value(request_id)
+                .Key("error_message"s).Value("not found"s)
+                .EndDict();
         }
 
         void BuildMapResponse(int request_id, const std::string& image, json::Builder& json) {
