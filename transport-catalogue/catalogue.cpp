@@ -142,7 +142,7 @@ namespace catalogue {
         return {stops.begin(), stops.end()};
     }
 
-    std::unique_ptr<std::set<std::string_view>> TransportCatalogue::GetBusesPassingThroughTheStop(
+    std::unique_ptr<std::set<std::string_view>> TransportCatalogue::GetBusPassStop(
         std::string_view stop_name) const {
         if (const auto position = buses_stops_.find(stop_name); position != buses_stops_.end())
             return std::make_unique<std::set<std::string_view>>(position->second);

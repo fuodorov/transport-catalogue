@@ -60,7 +60,7 @@ namespace catalogue {
         void AddDistance(std::string_view stop_from, std::string_view stop_to, int distance);
 
         [[nodiscard]] std::optional<BusStat> GetBusStat(std::string_view bus_number) const;
-        [[nodiscard]] std::unique_ptr<std::set<std::string_view>> GetBusesPassingThroughTheStop(std::string_view stop_name) const;
+        [[nodiscard]] std::unique_ptr<std::set<std::string_view>> GetBusPassStop(std::string_view stop_name) const;
         [[nodiscard]] const geo::Coordinates& GetMinStopCoordinates() const;
         [[nodiscard]] const geo::Coordinates& GetMaxStopCoordinates() const;
         [[nodiscard]] const std::set<std::string_view>& GetOrderedBusList() const;
