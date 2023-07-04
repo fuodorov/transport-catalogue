@@ -36,7 +36,7 @@ public:
 
   [[nodiscard]] std::set<std::string_view> GetUniqueStops() const;
   [[nodiscard]] const std::deque<Bus> &GetBuses() const;
-  [[nodiscard]] StringViewPairStorage<TempInfo>
+  [[nodiscard]] StringViewPairDB<TempInfo>
   GetAllDistances(std::string_view bus_number, double bus_velocity) const;
 
 private:

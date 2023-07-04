@@ -60,7 +60,7 @@ private:
 };
 
 template <class Type>
-using StringViewPairStorage =
+using StringViewPairDB =
     std::unordered_map<StringViewPair, Type, StringViewPairHash>;
 
 using BusStops =

@@ -164,10 +164,10 @@ const std::deque<Bus> &TransportCatalogue::GetBuses() const {
   return buses_db_;
 }
 
-StringViewPairStorage<TempInfo>
+StringViewPairDB<TempInfo>
 TransportCatalogue::GetAllDistances(std::string_view bus_number,
                                     double bus_velocity) const {
-  StringViewPairStorage<TempInfo> distances;
+  StringViewPairDB<TempInfo> distances;
 
   auto get_time = [this, &bus_velocity](std::string_view from,
                                         std::string_view to) -> double {
