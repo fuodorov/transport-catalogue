@@ -4,10 +4,10 @@
 REPO_ROOT:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 compile: ## compile c++ code
-	g++ *.cpp -Wall -Werror -std=c++17 -ltbb -lpthread -o main
+	g++ *.cpp */*.cpp -Wall -Werror -std=c++17 -ltbb -lpthread -o main
 
 format: ## autoformat code with clang-format
-	clang-format -i *.cpp *.h
+	clang-format -i *.cpp */*.cpp *.h */*.h
 
 deps: ## install dependencies
 	sudo apt install -y clang-format

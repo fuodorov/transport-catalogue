@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "geo.h"
+#include "geo/geo.h"
 
 namespace catalogue {
 

@@ -1,123 +1,93 @@
 #pragma once
 
-#include "graph.h"
+#include <variant>
 
-#include <algorithm>
-#include <cassert>
-#include <cstdint>
-#include <iterator>
-#include <optional>
-#include <stdexcept>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include "catalogue.h"
+#include "domain.h"
+#include "graph/router.h"
 
-namespace graph {
+namespace routing {
 
-template <typename Weight> class Router {
-private:
-  using Graph = DirectedWeightedGraph<Weight>;
-
-public:
-  explicit Router(const Graph &graph);
-
-  struct RouteTempInfo {
-    Weight weight;
-    std::vector<EdgeId> edges;
-  };
-
-  std::optional<RouteTempInfo> BuildRoute(VertexId from, VertexId to) const;
-
-private:
-  struct RouteInternalData {
-    Weight weight;
-    std::optional<EdgeId> prev_edge;
-  };
-  using RoutesInternalData =
-      std::vector<std::vector<std::optional<RouteInternalData>>>;
-
-  void InitializeRoutesInternalData(const Graph &graph) {
-    const size_t vertex_count = graph.GetVertexCount();
-    for (VertexId vertex = 0; vertex < vertex_count; ++vertex) {
-      routes_internal_data_[vertex][vertex] =
-          RouteInternalData{ZERO_WEIGHT, std::nullopt};
-      for (const EdgeId edge_id : graph.GetIncidentEdges(vertex)) {
-        const auto &edge = graph.GetEdge(edge_id);
-        if (edge.weight < ZERO_WEIGHT) {
-          throw std::domain_error("Edges' weights should be non-negative");
-        }
-        auto &route_internal_data = routes_internal_data_[vertex][edge.to];
-        if (!route_internal_data || route_internal_data->weight > edge.weight) {
-          route_internal_data = RouteInternalData{edge.weight, edge_id};
-        }
-      }
-    }
-  }
-
-  void RelaxRoute(VertexId vertex_from, VertexId vertex_to,
-                  const RouteInternalData &route_from,
-                  const RouteInternalData &route_to) {
-    auto &route_relaxing = routes_internal_data_[vertex_from][vertex_to];
-    const Weight candidate_weight = route_from.weight + route_to.weight;
-    if (!route_relaxing || candidate_weight < route_relaxing->weight) {
-      route_relaxing = {candidate_weight, route_to.prev_edge
-                                              ? route_to.prev_edge
-                                              : route_from.prev_edge};
-    }
-  }
-
-  void RelaxRoutesInternalDataThroughVertex(size_t vertex_count,
-                                            VertexId vertex_through) {
-    for (VertexId vertex_from = 0; vertex_from < vertex_count; ++vertex_from) {
-      if (const auto &route_from =
-              routes_internal_data_[vertex_from][vertex_through]) {
-        for (VertexId vertex_to = 0; vertex_to < vertex_count; ++vertex_to) {
-          if (const auto &route_to =
-                  routes_internal_data_[vertex_through][vertex_to]) {
-            RelaxRoute(vertex_from, vertex_to, *route_from, *route_to);
-          }
-        }
-      }
-    }
-  }
-
-  static constexpr Weight ZERO_WEIGHT{};
-  const Graph &graph_;
-  RoutesInternalData routes_internal_data_;
+struct Settings {
+  double velocity_{0};
+  int wait_time_{0};
 };
 
-template <typename Weight>
-Router<Weight>::Router(const Graph &graph)
-    : graph_(graph),
-      routes_internal_data_(graph.GetVertexCount(),
-                            std::vector<std::optional<RouteInternalData>>(
-                                graph.GetVertexCount())) {
-  InitializeRoutesInternalData(graph);
+struct WaitResponse {
+  double time{0.};
+  std::string type{"Wait"}, stop_name;
 
-  const size_t vertex_count = graph.GetVertexCount();
-  for (VertexId vertex_through = 0; vertex_through < vertex_count;
-       ++vertex_through) {
-    RelaxRoutesInternalDataThroughVertex(vertex_count, vertex_through);
-  }
-}
+  WaitResponse(double time, std::string_view stop)
+      : time(time), stop_name(stop) {}
+};
 
-template <typename Weight>
-std::optional<typename Router<Weight>::RouteTempInfo>
-Router<Weight>::BuildRoute(VertexId from, VertexId to) const {
-  const auto &route_internal_data = routes_internal_data_.at(from).at(to);
-  if (!route_internal_data) {
-    return std::nullopt;
-  }
-  const Weight weight = route_internal_data->weight;
-  std::vector<EdgeId> edges;
-  for (std::optional<EdgeId> edge_id = route_internal_data->prev_edge; edge_id;
-       edge_id = routes_internal_data_[from][graph_.GetEdge(*edge_id).from]
-                     ->prev_edge) {
-    edges.push_back(*edge_id);
-  }
-  std::reverse(edges.begin(), edges.end());
+struct BusResponse {
+  double time{0.};
+  std::string type{"Bus"}, bus;
+  int span_count{0};
 
-  return RouteTempInfo{weight, std::move(edges)};
-}
+  BusResponse(double time, const std::string &bus, int stops_count)
+      : time(time), bus(bus), span_count(stops_count) {}
+};
 
-} // namespace graph
+using ItemResponse = std::variant<WaitResponse, BusResponse>;
+
+struct DataResponse {
+  double total_time{0.};
+  std::vector<ItemResponse> items;
+};
+
+using DataResponseOpt = std::optional<DataResponse>;
+
+class TransportRouter {
+public:
+  using Weight = double;
+  using Graph = graph::DirectedWeightedGraph<Weight>;
+  using Router = graph::Router<Weight>;
+
+public:
+  TransportRouter(const catalogue::TransportCatalogue &catalogue,
+                  Settings settings);
+
+public:
+  [[nodiscard]] DataResponseOpt BuildRoute(std::string_view from,
+                                           std::string_view to) const;
+
+private:
+  void BuildVertexesForStops(const std::set<std::string_view> &stops);
+  void AddBusRouteEdges(const catalogue::Bus &bus);
+
+  void BuildRoutesGraph(const std::deque<catalogue::Bus> &buses);
+
+private:
+  struct StopVertexes {
+    graph::VertexId start{0};
+    graph::VertexId end{0};
+  };
+
+  struct EdgeHash {
+    inline size_t operator()(const graph::Edge<Weight> &edge) const {
+      return even_ * std::hash<size_t>{}(edge.from) +
+             even_ * even_ * std::hash<size_t>{}(edge.to) +
+             even_ * even_ * even_ * std::hash<Weight>{}(edge.weight);
+    }
+
+  private:
+    static constexpr size_t even_{42};
+  };
+
+private:
+  const catalogue::TransportCatalogue &catalogue_;
+  Settings settings_;
+
+  std::unordered_map<std::string_view, StopVertexes> stop_vertexes_;
+  std::unordered_map<graph::Edge<Weight>, ItemResponse, EdgeHash>
+      edge_responses_;
+
+  std::unique_ptr<Graph> routes_{nullptr};
+  std::unique_ptr<Router> router_{nullptr};
+};
+
+using TransportRouterOpt = std::optional<TransportRouter>;
+
+} // namespace routing

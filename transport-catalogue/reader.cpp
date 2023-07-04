@@ -1,8 +1,8 @@
-#include "json_reader.h"
+#include "reader.h"
 
 #include <string>
 
-#include "json_builder.h"
+#include "json/builder.h"
 
 namespace request {
 
