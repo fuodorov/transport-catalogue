@@ -240,7 +240,7 @@ public:
   }
 
 protected:
-  std::vector<std::unique_ptr<Object>> storage_;
+  std::vector<std::unique_ptr<Object>> db_;
 };
 
 class Document final : public ObjectContainer {

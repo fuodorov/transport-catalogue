@@ -21,12 +21,12 @@ private:
 public:
   explicit Router(const Graph &graph);
 
-  struct RouteInfo {
+  struct RouteTempInfo {
     Weight weight;
     std::vector<EdgeId> edges;
   };
 
-  std::optional<RouteInfo> BuildRoute(VertexId from, VertexId to) const;
+  std::optional<RouteTempInfo> BuildRoute(VertexId from, VertexId to) const;
 
 private:
   struct RouteInternalData {
@@ -102,7 +102,7 @@ Router<Weight>::Router(const Graph &graph)
 }
 
 template <typename Weight>
-std::optional<typename Router<Weight>::RouteInfo>
+std::optional<typename Router<Weight>::RouteTempInfo>
 Router<Weight>::BuildRoute(VertexId from, VertexId to) const {
   const auto &route_internal_data = routes_internal_data_.at(from).at(to);
   if (!route_internal_data) {
@@ -117,7 +117,7 @@ Router<Weight>::BuildRoute(VertexId from, VertexId to) const {
   }
   std::reverse(edges.begin(), edges.end());
 
-  return RouteInfo{weight, std::move(edges)};
+  return RouteTempInfo{weight, std::move(edges)};
 }
 
 } // namespace graph

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -40,7 +41,7 @@ struct BusStatistics {
   std::string_view number;
   size_t stops_count{0u};
   size_t unique_stops_count{0u};
-  int rout_length{0};
+  int rout_len{0};
   double curvature{0.};
 };
 
@@ -61,5 +62,14 @@ private:
 template <class Type>
 using StringViewPairStorage =
     std::unordered_map<StringViewPair, Type, StringViewPairHash>;
+
+using BusStops =
+    std::pair<std::shared_ptr<Bus>, std::vector<std::shared_ptr<Stop>>>;
+using Stops = std::map<std::string_view, std::shared_ptr<Stop>>;
+
+struct TempInfo {
+  double time{0.};
+  int stops_count{0};
+};
 
 } // namespace catalogue

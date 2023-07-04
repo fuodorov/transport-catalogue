@@ -9,15 +9,6 @@
 
 namespace catalogue {
 
-using BusStopsStorage =
-    std::pair<std::shared_ptr<Bus>, std::vector<std::shared_ptr<Stop>>>;
-using StopsStorage = std::map<std::string_view, std::shared_ptr<Stop>>;
-
-struct Info {
-  double time{0.};
-  int stops_count{0};
-};
-
 class TransportCatalogue {
 public:
   TransportCatalogue() = default;
@@ -29,33 +20,32 @@ public:
                    int distance);
 
   [[nodiscard]] std::optional<BusStatistics>
-  GetBusStatistics(std::string_view bus_number) const;
+  GetBusStat(std::string_view bus_number) const;
   [[nodiscard]] std::unique_ptr<std::set<std::string_view>>
-  GetBusesPassingThroughTheStop(std::string_view stop_name) const;
+  GetBusPassStop(std::string_view stop_name) const;
 
-  [[nodiscard]] const geo::Coordinates &GetMinStopCoordinates() const;
-  [[nodiscard]] const geo::Coordinates &GetMaxStopCoordinates() const;
+  [[nodiscard]] const geo::Coordinates &GetMinCoordinates() const;
+  [[nodiscard]] const geo::Coordinates &GetMaxCoordinates() const;
 
-  [[nodiscard]] const std::set<std::string_view> &GetOrderedBusList() const;
-  [[nodiscard]] BusStopsStorage GetFinalStops(std::string_view bus_name) const;
-  [[nodiscard]] BusStopsStorage
-  GetRouteInfo(std::string_view bus_name,
-               bool include_backward_way = true) const;
-  [[nodiscard]] StopsStorage GetAllStopsFromRoutes() const;
+  [[nodiscard]] const std::set<std::string_view> &GetOrderedBuses() const;
+  [[nodiscard]] BusStops GetFinalStops(std::string_view bus_name) const;
+  [[nodiscard]] BusStops
+  GetRouteTempInfo(std::string_view bus_name,
+                   bool include_backward_way = true) const;
+  [[nodiscard]] Stops GetAllStops() const;
 
   [[nodiscard]] std::set<std::string_view> GetUniqueStops() const;
   [[nodiscard]] const std::deque<Bus> &GetBuses() const;
-  [[nodiscard]] StringViewPairStorage<Info>
-  GetAllDistancesOnTheRoute(std::string_view bus_number,
-                            double bus_velocity) const;
+  [[nodiscard]] StringViewPairStorage<TempInfo>
+  GetAllDistances(std::string_view bus_number, double bus_velocity) const;
 
 private:
   [[nodiscard]] int
-  CalculateRouteLength(const std::shared_ptr<Bus> &bus_info) const;
+  CalculateRouteLen(const std::shared_ptr<Bus> &bus_info) const;
   [[nodiscard]] double
-  CalculateGeographicLength(const std::shared_ptr<Bus> &bus_info) const;
+  CalculateGeoLen(const std::shared_ptr<Bus> &bus_info) const;
 
-  void UpdateMinMaxStopCoordinates(const geo::Coordinates &coordinates);
+  void UpdateMinMaxCoordinates(const geo::Coordinates &coordinates);
 
 private:
   using StopPointersPair =
@@ -63,34 +53,34 @@ private:
 
   struct StopPointersPairHash {
     size_t operator()(const StopPointersPair &pair) const {
-      return pair.first->Hash() + prime_number * pair.second->Hash();
+      return pair.first->Hash() + even_ * pair.second->Hash();
     }
 
   private:
-    static const size_t prime_number{31};
+    static const size_t even_{42};
   };
 
   template <class Type>
-  using InterStopsStorage =
+  using InterStops =
       std::unordered_map<StopPointersPair, Type, StopPointersPairHash>;
 
 private:
-  std::deque<Stop> stops_storage_;
+  std::deque<Stop> stops_db_;
   std::unordered_map<std::string_view, std::shared_ptr<Stop>> stops_;
 
-  std::deque<Bus> buses_storage_;
+  std::deque<Bus> buses_db_;
   std::unordered_map<std::string_view, std::shared_ptr<Bus>> buses_;
 
   std::unordered_map<std::string_view, std::set<std::string_view>>
       buses_through_stop_;
-  InterStopsStorage<int> distances_between_stops_;
+  InterStops<int> distances_stops_;
 
-  geo::Coordinates coordinates_min_{std::numeric_limits<double>::max(),
+  geo::Coordinates min_coordinates_{std::numeric_limits<double>::max(),
                                     std::numeric_limits<double>::max()};
-  geo::Coordinates coordinates_max_{std::numeric_limits<double>::min(),
+  geo::Coordinates max_coordinates_{std::numeric_limits<double>::min(),
                                     std::numeric_limits<double>::min()};
 
-  std::set<std::string_view> ordered_bus_list_;
+  std::set<std::string_view> ordered_buses_;
 };
 
 } // namespace catalogue

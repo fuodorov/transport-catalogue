@@ -186,14 +186,14 @@ void Text::RenderObject(const RenderContext &context) const {
 }
 
 void Document::AddPtr(std::unique_ptr<Object> &&object) {
-  storage_.emplace_back(std::move(object));
+  db_.emplace_back(std::move(object));
 }
 
 void Document::Render(std::ostream &out) const {
   out << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv << std::endl;
   out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv
       << std::endl;
-  for (const auto &object : storage_)
+  for (const auto &object : db_)
     object->Render(out);
   out << "</svg>"sv;
 }

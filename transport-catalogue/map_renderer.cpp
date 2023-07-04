@@ -40,9 +40,8 @@ MapImageRenderer::MapImageRenderer(
     const catalogue::TransportCatalogue &catalogue,
     const Visualization &settings, svg::Document &image)
     : catalogue_(catalogue), settings_(settings), image_(image),
-      min_lng_(catalogue_.GetMinStopCoordinates().lng),
-      max_lat_(catalogue_.GetMaxStopCoordinates().lat), zoom_(CalculateZoom()) {
-}
+      min_lng_(catalogue_.GetMinCoordinates().lng),
+      max_lat_(catalogue_.GetMaxCoordinates().lat), zoom_(CalculateZoom()) {}
 
 void MapImageRenderer::Render() {
   PutRouteLines();
@@ -57,8 +56,8 @@ void MapImageRenderer::PutRouteLines() {
   int route_id{0};
   bool is_previous_route_empty{true};
 
-  for (std::string_view bus_name : catalogue_.GetOrderedBusList()) {
-    auto [bus, stops] = catalogue_.GetRouteInfo(bus_name);
+  for (std::string_view bus_name : catalogue_.GetOrderedBuses()) {
+    auto [bus, stops] = catalogue_.GetRouteTempInfo(bus_name);
 
     route_id = is_previous_route_empty ? route_id : route_id + 1;
 
@@ -83,7 +82,7 @@ void MapImageRenderer::PutRouteNames() {
   int route_id{0};
   bool is_previous_route_empty{true};
 
-  for (std::string_view bus_name : catalogue_.GetOrderedBusList()) {
+  for (std::string_view bus_name : catalogue_.GetOrderedBuses()) {
     auto [bus, stops] = catalogue_.GetFinalStops(bus_name);
 
     route_id = is_previous_route_empty ? route_id : route_id + 1;
@@ -120,7 +119,7 @@ void MapImageRenderer::PutRouteNames() {
 }
 
 void MapImageRenderer::PutStopCircles() {
-  for (const auto &[_, stop] : catalogue_.GetAllStopsFromRoutes())
+  for (const auto &[_, stop] : catalogue_.GetAllStops())
     image_.Add(svg::Circle()
                    .SetCenter(ToScreenPosition(stop->point))
                    .SetRadius(settings_.stop_radius_)
@@ -131,7 +130,7 @@ void MapImageRenderer::PutStopNames() {
   const auto &stop_settings = settings_.labels_.at(LabelType::Stop);
   const auto &under_layer_settings = settings_.under_layer_;
 
-  for (const auto &[_, stop] : catalogue_.GetAllStopsFromRoutes()) {
+  for (const auto &[_, stop] : catalogue_.GetAllStops()) {
     // Background - first
     image_.Add(svg::Text()
                    .SetData(stop->name)
@@ -158,8 +157,8 @@ void MapImageRenderer::PutStopNames() {
 double MapImageRenderer::CalculateZoom() const {
   double zoom{0.};
 
-  const auto [min_lat, min_lng] = catalogue_.GetMinStopCoordinates();
-  const auto [max_lat, max_lng] = catalogue_.GetMaxStopCoordinates();
+  const auto [min_lat, min_lng] = catalogue_.GetMinCoordinates();
+  const auto [max_lat, max_lng] = catalogue_.GetMaxCoordinates();
   const double &padding = settings_.screen_.padding_;
 
   auto make_zoom_coefficient = [&](double max_min_diff,

@@ -28,7 +28,7 @@ void TransportRouter::BuildVertexesForStops(
 
 void TransportRouter::AddBusRouteEdges(const catalogue::Bus &bus) {
   for (const auto &[route, info] :
-       catalogue_.GetAllDistancesOnTheRoute(bus.number, settings_.velocity_)) {
+       catalogue_.GetAllDistances(bus.number, settings_.velocity_)) {
     auto edge =
         graph::Edge<Weight>{stop_vertexes_[route.first].end,
                             stop_vertexes_[route.second].start, info.time};

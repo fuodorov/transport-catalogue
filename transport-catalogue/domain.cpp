@@ -7,7 +7,7 @@ namespace catalogue {
 std::ostream &operator<<(std::ostream &os, const BusStatistics &bus_info) {
   return os << "Bus " << bus_info.number << ": " << bus_info.stops_count
             << " stops on route, " << bus_info.unique_stops_count
-            << " unique stops, " << bus_info.rout_length << " route length, "
+            << " unique stops, " << bus_info.rout_len << " route len, "
             << std::setprecision(6) << bus_info.curvature << " curvature";
 }
 

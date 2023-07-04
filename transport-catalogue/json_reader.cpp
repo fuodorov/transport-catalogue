@@ -50,8 +50,8 @@ void MakeBusResponse(int request_id, const BusStatistics &statistics,
       .Value(statistics.curvature)
       .Key("request_id"s)
       .Value(request_id)
-      .Key("route_length"s)
-      .Value(statistics.rout_length)
+      .Key("route_len"s)
+      .Value(statistics.rout_len)
       .Key("stop_count"s)
       .Value(static_cast<int>(statistics.stops_count))
       .Key("unique_stop_count"s)
@@ -245,14 +245,14 @@ json::Node MakeResponse(const TransportCatalogue &catalogue,
     if (type == "Bus"s) {
       name = request_.at("name"s).AsString();
 
-      if (auto bus_statistics = catalogue.GetBusStatistics(name)) {
+      if (auto bus_statistics = catalogue.GetBusStat(name)) {
         MakeBusResponse(id, *bus_statistics, response);
       } else {
         MakeErrorResponse(id, response);
       }
     } else if (type == "Stop"s) {
       name = request_.at("name"s).AsString();
-      if (auto buses = catalogue.GetBusesPassingThroughTheStop(name)) {
+      if (auto buses = catalogue.GetBusPassStop(name)) {
         MakeStopResponse(id, *buses, response);
       } else {
         MakeErrorResponse(id, response);
