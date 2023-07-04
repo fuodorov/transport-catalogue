@@ -3,7 +3,6 @@
 #include <variant>
 
 #include "catalogue.h"
-#include "domain.h"
 #include "graph/router.h"
 
 namespace routing {
