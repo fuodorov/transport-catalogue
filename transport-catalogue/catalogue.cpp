@@ -9,7 +9,7 @@ namespace catalogue {
 std::ostream &operator<<(std::ostream &os, const BusStatistics &bus_info) {
   return os << "Bus " << bus_info.number << ": " << bus_info.stops_count
             << " stops on route, " << bus_info.unique_stops_count
-            << " unique stops, " << bus_info.rout_len << " route len, "
+            << " unique stops, " << bus_info.route_len << " route len, "
             << std::setprecision(6) << bus_info.curvature << " curvature";
 }
 
@@ -65,16 +65,15 @@ int TransportCatalogue::CalculateRouteLen(
                : distances_stops_.at({stops_.at(to), stops_.at(from)});
   };
 
-  int forward_route = std::transform_reduce(
+  int forward = std::transform_reduce(
       bus_info->stops.begin(), std::prev(bus_info->stops.end()),
       std::next(bus_info->stops.begin()), 0, std::plus<>(), get_route_len);
 
-  int backward_route = std::transform_reduce(
+  int backward = std::transform_reduce(
       bus_info->stops.rbegin(), std::prev(bus_info->stops.rend()),
       std::next(bus_info->stops.rbegin()), 0, std::plus<>(), get_route_len);
 
-  return (bus_info->type == RouteType::CIRCLE) ? forward_route
-                                               : forward_route + backward_route;
+  return (bus_info->type == RouteType::CIRCLE) ? forward : forward + backward;
 }
 
 double TransportCatalogue::CalculateGeoLen(
@@ -93,7 +92,6 @@ void TransportCatalogue::UpdateMinMaxCoordinates(
     const geo::Coordinates &coordinates) {
   min_coordinates_.lat = std::min(min_coordinates_.lat, coordinates.lat);
   min_coordinates_.lng = std::min(min_coordinates_.lng, coordinates.lng);
-
   max_coordinates_.lat = std::max(max_coordinates_.lat, coordinates.lat);
   max_coordinates_.lng = std::max(max_coordinates_.lng, coordinates.lng);
 }
@@ -191,30 +189,27 @@ TransportCatalogue::GetAllDistances(std::string_view bus_number,
   };
 
   auto add_info = [&distances, &get_time](auto begin, auto end) {
-    double cumulative_time{0.};
+    double time{0.};
     StringViewPair key;
-    TempInfo current_info;
-    auto previous{begin};
+    TempInfo info;
+    auto prev{begin};
 
     for (auto from = begin; from != end; ++from) {
-      cumulative_time = 0.;
-      previous = from;
+      time = 0.;
+      prev = from;
 
       for (auto to = std::next(from); to != end; ++to) {
-        cumulative_time += get_time(*previous, *to);
+        time += get_time(*prev, *to);
         key = StringViewPair{*from, *to};
-        current_info = TempInfo{cumulative_time,
-                                static_cast<int>(std::distance(from, to))};
+        info = TempInfo{time, static_cast<int>(std::distance(from, to))};
 
         if (distances.count(key) > 0) {
-          distances[key] = distances[key].time < cumulative_time
-                               ? distances[key]
-                               : current_info;
+          distances[key] = distances[key].time < time ? distances[key] : info;
         } else {
-          distances.emplace(key, current_info);
+          distances.emplace(key, info);
         }
 
-        previous = to;
+        prev = to;
       }
     }
   };

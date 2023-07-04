@@ -71,7 +71,6 @@ private:
     static constexpr size_t even_{42};
   };
 
-private:
   const catalogue::TransportCatalogue &catalogue_;
   Settings settings_;
 

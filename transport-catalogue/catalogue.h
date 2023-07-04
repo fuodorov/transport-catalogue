@@ -43,7 +43,7 @@ struct BusStatistics {
   std::string_view number;
   size_t stops_count{0u};
   size_t unique_stops_count{0u};
-  int rout_len{0};
+  int route_len{0};
   double curvature{0.};
 };
 

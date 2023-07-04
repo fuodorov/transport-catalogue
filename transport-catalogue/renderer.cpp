@@ -54,12 +54,12 @@ void MapImageRenderer::PutRouteLines() {
   const double &width = settings_.line_width_;
 
   int route_id{0};
-  bool is_previous_route_empty{true};
+  bool is_prev_route_empty{true};
 
   for (std::string_view bus_name : catalogue_.GetOrderedBuses()) {
     auto [bus, stops] = catalogue_.GetRouteTempInfo(bus_name);
 
-    route_id = is_previous_route_empty ? route_id : route_id + 1;
+    route_id = is_prev_route_empty ? route_id : route_id + 1;
 
     svg::Polyline route;
     for (const auto &stop : stops)
@@ -71,7 +71,7 @@ void MapImageRenderer::PutRouteLines() {
                    .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
                    .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND));
 
-    is_previous_route_empty = stops.empty();
+    is_prev_route_empty = stops.empty();
   }
 }
 
@@ -80,12 +80,12 @@ void MapImageRenderer::PutRouteNames() {
   const auto &under_layer_settings = settings_.under_layer_;
 
   int route_id{0};
-  bool is_previous_route_empty{true};
+  bool is_prev_route_empty{true};
 
   for (std::string_view bus_name : catalogue_.GetOrderedBuses()) {
     auto [bus, stops] = catalogue_.GetFinalStops(bus_name);
 
-    route_id = is_previous_route_empty ? route_id : route_id + 1;
+    route_id = is_prev_route_empty ? route_id : route_id + 1;
 
     if (stops.empty())
       continue;
@@ -114,7 +114,7 @@ void MapImageRenderer::PutRouteNames() {
                      .SetFillColor(TakeColorById(route_id)));
     }
 
-    is_previous_route_empty = stops.empty();
+    is_prev_route_empty = stops.empty();
   }
 }
 

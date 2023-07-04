@@ -51,7 +51,7 @@ void MakeBusResponse(int request_id, const BusStatistics &statistics,
       .Key("request_id"s)
       .Value(request_id)
       .Key("route_len"s)
-      .Value(statistics.rout_len)
+      .Value(statistics.route_len)
       .Key("stop_count"s)
       .Value(static_cast<int>(statistics.stops_count))
       .Key("unique_stop_count"s)
