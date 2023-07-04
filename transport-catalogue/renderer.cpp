@@ -200,14 +200,6 @@ std::string RenderTransportMap(const catalogue::TransportCatalogue &catalogue,
 
   MapImageRenderer renderer{catalogue, settings, image};
   renderer.Render();
-
-  if (true) {
-    std::ofstream out("D:\\education\\cpp\\yandex_cpp\\data\\local\\out.svg",
-                      std::ios::trunc);
-    image.Render(out);
-    out.close();
-  }
-
   std::stringstream ss;
   image.Render(ss);
   return ss.str();

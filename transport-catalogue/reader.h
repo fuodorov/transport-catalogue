@@ -13,16 +13,12 @@ struct ResponseSettings {
 };
 
 catalogue::TransportCatalogue ParseBaseRequest(const json::Array &requests);
-
 render::Visualization ParseRenderSettings(const json::Dict &settings);
-
 routing::Settings ParseRoutingSettings(const json::Dict &requests);
-
 json::Node MakeResponse(const catalogue::TransportCatalogue &catalogue,
                         routing::TransportRouterOpt &router,
                         const json::Array &requests,
                         const ResponseSettings &settings);
-
-void RequestHandler(std::istream &input, std::ostream &output);
+void Handler(std::istream &input, std::ostream &output);
 
 } // namespace request

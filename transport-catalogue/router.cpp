@@ -28,7 +28,7 @@ void TransportRouter::BuildVertexesForStops(
 
 void TransportRouter::AddBusRouteEdges(const catalogue::Bus &bus) {
   for (const auto &[route, info] :
-       catalogue_.GetAllDistances(bus.number, settings_.velocity_)) {
+       catalogue_.GetAllDistances(bus.number, settings_.speed_)) {
     auto edge =
         graph::Edge<Weight>{stop_vertexes_[route.first].end,
                             stop_vertexes_[route.second].start, info.time};
@@ -42,15 +42,14 @@ void TransportRouter::BuildRoutesGraph(
     const std::deque<catalogue::Bus> &buses) {
   routes_ = std::make_unique<Graph>(stop_vertexes_.size() * 2);
 
-  auto wait_time = static_cast<double>(settings_.wait_time_);
-  auto stop_edge = graph::Edge<Weight>{};
+  auto time = static_cast<double>(settings_.time_wait_);
+  auto edge = graph::Edge<Weight>{};
 
   for (auto [stop_name, stop_vertexes] : stop_vertexes_) {
-    stop_edge =
-        graph::Edge<Weight>{stop_vertexes.start, stop_vertexes.end, wait_time};
+    edge = graph::Edge<Weight>{stop_vertexes.start, stop_vertexes.end, time};
 
-    routes_->AddEdge(stop_edge);
-    edge_responses_.emplace(stop_edge, WaitResponse(wait_time, stop_name));
+    routes_->AddEdge(edge);
+    edge_responses_.emplace(edge, WaitResponse(time, stop_name));
   }
 
   for (const auto &bus : buses) {

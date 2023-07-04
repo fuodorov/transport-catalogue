@@ -291,7 +291,7 @@ routing::Settings ParseRoutingSettings(const json::Dict &requests) {
   return settings;
 }
 
-void RequestHandler(std::istream &in, std::ostream &out) {
+void Handler(std::istream &in, std::ostream &out) {
   TransportCatalogue catalogue;
   TransportRouterOpt router{std::nullopt};
   ResponseSettings settings;

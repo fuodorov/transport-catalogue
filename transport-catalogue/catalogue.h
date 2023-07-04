@@ -64,7 +64,6 @@ private:
 template <class Type>
 using StringViewPairDB =
     std::unordered_map<StringViewPair, Type, StringViewPairHash>;
-
 using BusStops =
     std::pair<std::shared_ptr<Bus>, std::vector<std::shared_ptr<Stop>>>;
 using Stops = std::map<std::string_view, std::shared_ptr<Stop>>;
@@ -78,7 +77,6 @@ class TransportCatalogue {
 public:
   TransportCatalogue() = default;
 
-public:
   void AddStop(Stop stop);
   void AddBus(Bus bus);
   void AddDistance(std::string_view stop_from, std::string_view stop_to,
@@ -112,7 +110,6 @@ private:
 
   void UpdateMinMaxCoordinates(const geo::Coordinates &coordinates);
 
-private:
   using StopPointersPair =
       std::pair<std::shared_ptr<Stop>, std::shared_ptr<Stop>>;
 
@@ -129,7 +126,6 @@ private:
   using InterStops =
       std::unordered_map<StopPointersPair, Type, StopPointersPairHash>;
 
-private:
   std::deque<Stop> stops_db_;
   std::unordered_map<std::string_view, std::shared_ptr<Stop>> stops_;
 

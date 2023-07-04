@@ -29,11 +29,9 @@ class Visualization {
 public:
   Visualization() = default;
 
-public:
   Visualization &SetScreen(const Screen &screen);
   Visualization &SetLineWidth(double width);
   Visualization &SetStopRadius(double radius);
-
   Visualization &SetLabels(LabelType type, Label label);
   Visualization &SetUnderLayer(UnderLayer layer);
   Visualization &SetColors(std::vector<svg::Color> colors);
@@ -53,7 +51,6 @@ public:
   MapImageRenderer(const catalogue::TransportCatalogue &catalogue,
                    const Visualization &settings, svg::Document &image);
 
-public:
   void Render();
 
 private:
@@ -66,7 +63,6 @@ private:
   [[nodiscard]] svg::Color TakeColorById(int route_id) const;
   svg::Point ToScreenPosition(geo::Coordinates position);
 
-private:
   const catalogue::TransportCatalogue &catalogue_;
   const Visualization &settings_;
   svg::Document &image_;

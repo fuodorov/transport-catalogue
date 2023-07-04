@@ -8,8 +8,8 @@
 namespace routing {
 
 struct Settings {
-  double velocity_{0};
-  int wait_time_{0};
+  double speed_{0};
+  int time_wait_{0};
 };
 
 struct WaitResponse {
@@ -44,21 +44,17 @@ public:
   using Graph = graph::DirectedWeightedGraph<Weight>;
   using Router = graph::Router<Weight>;
 
-public:
   TransportRouter(const catalogue::TransportCatalogue &catalogue,
                   Settings settings);
 
-public:
   [[nodiscard]] DataResponseOpt BuildRoute(std::string_view from,
                                            std::string_view to) const;
 
 private:
   void BuildVertexesForStops(const std::set<std::string_view> &stops);
   void AddBusRouteEdges(const catalogue::Bus &bus);
-
   void BuildRoutesGraph(const std::deque<catalogue::Bus> &buses);
 
-private:
   struct StopVertexes {
     graph::VertexId start{0};
     graph::VertexId end{0};
