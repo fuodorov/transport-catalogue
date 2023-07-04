@@ -9,6 +9,6 @@ struct Coordinates {
   double lng{0.};
 };
 
-double ComputeDistance(Coordinates from, Coordinates to);
+double CalculateDistance(Coordinates from, Coordinates to);
 
 } // namespace geo

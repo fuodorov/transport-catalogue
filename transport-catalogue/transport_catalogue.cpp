@@ -19,18 +19,18 @@ void TransportCatalogue::AddDistance(std::string_view stop_from,
 }
 
 void TransportCatalogue::AddBus(Bus bus) {
-  for (auto &stop : bus.stop_names) {
+  for (auto &stop : bus.stops) {
     stop = stops_.find(stop)->first;
     UpdateMinMaxStopCoordinates(stops_.at(stop)->point);
   }
-  bus.unique_stops = {bus.stop_names.begin(), bus.stop_names.end()};
+  bus.unique_stops = {bus.stops.begin(), bus.stops.end()};
 
   const auto position =
       buses_storage_.insert(buses_storage_.begin(), std::move(bus));
   buses_.insert({position->number, std::make_shared<Bus>(*position)});
   ordered_bus_list_.emplace(position->number);
 
-  for (std::string_view stop : position->stop_names)
+  for (std::string_view stop : position->stops)
     buses_through_stop_[stop].insert(position->number);
 }
 
@@ -62,16 +62,14 @@ int TransportCatalogue::CalculateRouteLength(
   };
 
   int forward_route = std::transform_reduce(
-      bus_info->stop_names.begin(), std::prev(bus_info->stop_names.end()),
-      std::next(bus_info->stop_names.begin()), 0, std::plus<>(),
-      get_route_length);
+      bus_info->stops.begin(), std::prev(bus_info->stops.end()),
+      std::next(bus_info->stops.begin()), 0, std::plus<>(), get_route_length);
   if (bus_info->type == RouteType::CIRCLE)
     return forward_route;
 
   int backward_route = std::transform_reduce(
-      bus_info->stop_names.rbegin(), std::prev(bus_info->stop_names.rend()),
-      std::next(bus_info->stop_names.rbegin()), 0, std::plus<>(),
-      get_route_length);
+      bus_info->stops.rbegin(), std::prev(bus_info->stops.rend()),
+      std::next(bus_info->stops.rbegin()), 0, std::plus<>(), get_route_length);
 
   return forward_route + backward_route;
 }
@@ -79,10 +77,10 @@ int TransportCatalogue::CalculateRouteLength(
 double TransportCatalogue::CalculateGeographicLength(
     const std::shared_ptr<Bus> &bus_info) const {
   double geographic_length = std::transform_reduce(
-      std::next(bus_info->stop_names.begin()), bus_info->stop_names.end(),
-      bus_info->stop_names.begin(), 0., std::plus<>(),
+      std::next(bus_info->stops.begin()), bus_info->stops.end(),
+      bus_info->stops.begin(), 0., std::plus<>(),
       [this](std::string_view from, std::string_view to) {
-        return ComputeDistance(stops_.at(from)->point, stops_.at(to)->point);
+        return CalculateDistance(stops_.at(from)->point, stops_.at(to)->point);
       });
 
   return (bus_info->type == RouteType::CIRCLE) ? geographic_length
@@ -117,16 +115,16 @@ TransportCatalogue::GetFinalStops(std::string_view bus_name) const {
 
   std::vector<std::shared_ptr<Stop>> stops;
 
-  if (bus->stop_names.empty())
+  if (bus->stops.empty())
     return std::make_pair(bus, stops);
 
   if (bus->type == RouteType::CIRCLE) {
-    stops.emplace_back(stops_.at(bus->stop_names.front()));
+    stops.emplace_back(stops_.at(bus->stops.front()));
   } else if (bus->type == RouteType::TWO_DIRECTIONAL) {
-    stops.emplace_back(stops_.at(bus->stop_names.front()));
+    stops.emplace_back(stops_.at(bus->stops.front()));
 
-    if (bus->stop_names.front() != bus->stop_names.back())
-      stops.emplace_back(stops_.at(bus->stop_names.back()));
+    if (bus->stops.front() != bus->stops.back())
+      stops.emplace_back(stops_.at(bus->stops.back()));
   }
 
   return std::make_pair(bus, stops);
@@ -140,13 +138,13 @@ TransportCatalogue::GetRouteInfo(std::string_view bus_name,
   std::vector<std::shared_ptr<Stop>> stops;
   stops.reserve(bus->GetStopsCount());
 
-  for (std::string_view stop : bus->stop_names)
+  for (std::string_view stop : bus->stops)
     stops.emplace_back(stops_.at(stop));
 
   if (include_backward_way &&
       bus->type == catalogue::RouteType::TWO_DIRECTIONAL) {
-    for (auto stop = std::next(bus->stop_names.rbegin());
-         stop != bus->stop_names.rend(); ++stop)
+    for (auto stop = std::next(bus->stops.rbegin()); stop != bus->stops.rend();
+         ++stop)
       stops.emplace_back(stops_.at(*stop));
   }
 
@@ -157,7 +155,7 @@ StopsStorage TransportCatalogue::GetAllStopsFromRoutes() const {
   std::unordered_map<std::string_view, std::shared_ptr<Stop>> stops;
 
   for (const auto &[_, bus] : buses_) {
-    for (std::string_view stop : bus->stop_names) {
+    for (std::string_view stop : bus->stops) {
       if (stops.count(stop) == 0)
         stops.emplace(stop, stops_.at(stop));
     }
@@ -223,7 +221,7 @@ TransportCatalogue::GetAllDistancesOnTheRoute(std::string_view bus_number,
   };
 
   const auto &bus = buses_.at(bus_number);
-  const auto &stops = bus->stop_names;
+  const auto &stops = bus->stops;
 
   if (bus->type == RouteType::TWO_DIRECTIONAL) {
     add_info(stops.begin(), stops.end());

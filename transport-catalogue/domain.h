@@ -16,7 +16,7 @@ enum class RouteType { CIRCLE, TWO_DIRECTIONAL };
 struct Bus {
   std::string number;
   RouteType type;
-  std::vector<std::string_view> stop_names;
+  std::vector<std::string_view> stops;
   std::set<std::string_view> unique_stops;
 
   [[nodiscard]] size_t GetStopsCount() const;
@@ -28,12 +28,12 @@ struct Stop {
 
   [[nodiscard]] size_t Hash() const {
     return std::hash<std::string>{}(name) +
-           even_value * std::hash<double>{}(point.lng) +
-           even_value * even_value * std::hash<double>{}(point.lat);
+           even_ * std::hash<double>{}(point.lng) +
+           even_ * even_ * std::hash<double>{}(point.lat);
   }
 
 private:
-  static const size_t even_value{37};
+  static const size_t even_{42};
 };
 
 struct BusStatistics {
@@ -55,7 +55,7 @@ struct StringViewPairHash {
   }
 
 private:
-  static constexpr size_t even_{37};
+  static constexpr size_t even_{42};
 };
 
 template <class Type>

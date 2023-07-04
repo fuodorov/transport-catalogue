@@ -12,8 +12,7 @@ std::ostream &operator<<(std::ostream &os, const BusStatistics &bus_info) {
 }
 
 size_t Bus::GetStopsCount() const {
-  return (type == RouteType::CIRCLE) ? stop_names.size()
-                                     : 2 * stop_names.size() - 1;
+  return (type == RouteType::CIRCLE) ? stops.size() : 2 * stops.size() - 1;
 }
 
 } // namespace catalogue

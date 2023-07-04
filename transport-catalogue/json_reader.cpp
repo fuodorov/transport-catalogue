@@ -33,12 +33,12 @@ Bus ParseBusRouteInput(const json::Dict &info) {
                                                : RouteType::TWO_DIRECTIONAL;
 
   const auto &stops = info.at("stops"s).AsArray();
-  bus.stop_names.reserve(stops.size());
+  bus.stops.reserve(stops.size());
 
   for (const auto &stop : stops)
-    bus.stop_names.emplace_back(stop.AsString());
+    bus.stops.emplace_back(stop.AsString());
 
-  bus.unique_stops = {bus.stop_names.begin(), bus.stop_names.end()};
+  bus.unique_stops = {bus.stops.begin(), bus.stops.end()};
 
   return bus;
 }
