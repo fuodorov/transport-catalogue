@@ -5,14 +5,13 @@ namespace routing {
 TransportRouter::TransportRouter(const catalogue::TransportCatalogue &catalogue,
                                  Settings settings)
     : catalogue_(catalogue), settings_(settings) {
-  BuildVertexesForStops(catalogue.GetUniqueStops());
-  BuildRoutesGraph(catalogue.GetBuses());
+  BuildVertexes(catalogue.GetUniqueStops());
+  BuildGraph(catalogue.GetBuses());
 
   router_ = std::make_unique<Router>(*routes_);
 }
 
-void TransportRouter::BuildVertexesForStops(
-    const std::set<std::string_view> &stops) {
+void TransportRouter::BuildVertexes(const std::set<std::string_view> &stops) {
   graph::VertexId start{0};
   graph::VertexId end{1};
 
@@ -26,7 +25,7 @@ void TransportRouter::BuildVertexesForStops(
   }
 }
 
-void TransportRouter::AddBusRouteEdges(const catalogue::Bus &bus) {
+void TransportRouter::AddBus(const catalogue::Bus &bus) {
   for (const auto &[route, info] :
        catalogue_.GetAllDistances(bus.number, settings_.speed_)) {
     auto edge =
@@ -38,8 +37,7 @@ void TransportRouter::AddBusRouteEdges(const catalogue::Bus &bus) {
   }
 }
 
-void TransportRouter::BuildRoutesGraph(
-    const std::deque<catalogue::Bus> &buses) {
+void TransportRouter::BuildGraph(const std::deque<catalogue::Bus> &buses) {
   routes_ = std::make_unique<Graph>(stop_vertexes_.size() * 2);
 
   auto time = static_cast<double>(settings_.time_wait_);
@@ -53,7 +51,7 @@ void TransportRouter::BuildRoutesGraph(
   }
 
   for (const auto &bus : buses) {
-    AddBusRouteEdges(bus);
+    AddBus(bus);
   }
 }
 

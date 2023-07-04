@@ -51,9 +51,9 @@ public:
                                            std::string_view to) const;
 
 private:
-  void BuildVertexesForStops(const std::set<std::string_view> &stops);
-  void AddBusRouteEdges(const catalogue::Bus &bus);
-  void BuildRoutesGraph(const std::deque<catalogue::Bus> &buses);
+  void BuildVertexes(const std::set<std::string_view> &stops);
+  void AddBus(const catalogue::Bus &bus);
+  void BuildGraph(const std::deque<catalogue::Bus> &buses);
 
   struct StopVertexes {
     graph::VertexId start{0};
