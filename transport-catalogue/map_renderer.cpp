@@ -36,8 +36,6 @@ Visualization &Visualization::SetColors(std::vector<svg::Color> colors) {
   return *this;
 }
 
-/* MAP IMAGE RENDERED */
-
 MapImageRenderer::MapImageRenderer(
     const catalogue::TransportCatalogue &catalogue,
     const Visualization &settings, svg::Document &image)
@@ -62,8 +60,6 @@ void MapImageRenderer::PutRouteLines() {
   for (std::string_view bus_name : catalogue_.GetOrderedBusList()) {
     auto [bus, stops] = catalogue_.GetRouteInfo(bus_name);
 
-    // If there are no stops on the route, the route following it must use the
-    // same index in the palette
     route_id = is_previous_route_empty ? route_id : route_id + 1;
 
     svg::Polyline route;
@@ -90,16 +86,12 @@ void MapImageRenderer::PutRouteNames() {
   for (std::string_view bus_name : catalogue_.GetOrderedBusList()) {
     auto [bus, stops] = catalogue_.GetFinalStops(bus_name);
 
-    // If there are no stops on the route, the route following it must use the
-    // same index in the palette
     route_id = is_previous_route_empty ? route_id : route_id + 1;
 
-    // If the route does not have stops, its name should not be drawn
     if (stops.empty())
       continue;
 
     for (const auto &stop : stops) {
-      // Background - first
       image_.Add(svg::Text()
                      .SetData(bus->number)
                      .SetFillColor(under_layer_settings.color_)
@@ -113,7 +105,6 @@ void MapImageRenderer::PutRouteNames() {
                      .SetFontFamily("Verdana")
                      .SetFontWeight("bold"));
 
-      // Text - second
       image_.Add(svg::Text()
                      .SetData(bus->number)
                      .SetPosition(ToScreenPosition(stop->point))
@@ -154,7 +145,6 @@ void MapImageRenderer::PutStopNames() {
                    .SetFontSize(stop_settings.font_size_)
                    .SetFontFamily("Verdana"s));
 
-    // Text - second
     image_.Add(svg::Text()
                    .SetData(stop->name)
                    .SetFillColor("black"s)
@@ -165,8 +155,6 @@ void MapImageRenderer::PutStopNames() {
   }
 }
 
-/* HELPER METHODS */
-
 double MapImageRenderer::CalculateZoom() const {
   double zoom{0.};
 
@@ -174,7 +162,6 @@ double MapImageRenderer::CalculateZoom() const {
   const auto [max_lat, max_lng] = catalogue_.GetMaxStopCoordinates();
   const double &padding = settings_.screen_.padding_;
 
-  // Calculate zoom coefficient along Ox or Oy axis
   auto make_zoom_coefficient = [&](double max_min_diff,
                                    double screen_size) -> double {
     return (max_min_diff == 0.) ? std::numeric_limits<double>::max()
@@ -187,8 +174,6 @@ double MapImageRenderer::CalculateZoom() const {
       make_zoom_coefficient(max_lat - min_lat, settings_.screen_.height_);
 
   zoom = std::min(zoom_x, zoom_y);
-  // If all stops have same lat or long -> chose where there is no division by
-  // zero If all stops are in the same point -> set to zero
   zoom = (zoom == std::numeric_limits<double>::max()) ? 0. : zoom;
 
   return zoom;
@@ -210,8 +195,6 @@ svg::Point MapImageRenderer::ToScreenPosition(geo::Coordinates position) {
   return point;
 }
 
-/* RENDERING METHODS */
-
 std::string RenderTransportMap(const catalogue::TransportCatalogue &catalogue,
                                const Visualization &settings) {
   svg::Document image;
@@ -219,7 +202,6 @@ std::string RenderTransportMap(const catalogue::TransportCatalogue &catalogue,
   MapImageRenderer renderer{catalogue, settings, image};
   renderer.Render();
 
-  // TODO: this is temporary output to file (just for debug)
   if (true) {
     std::ofstream out("D:\\education\\cpp\\yandex_cpp\\data\\local\\out.svg",
                       std::ios::trunc);

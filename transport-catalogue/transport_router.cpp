@@ -16,10 +16,10 @@ void TransportRouter::BuildVertexesForStops(
   graph::VertexId start{0};
   graph::VertexId end{1};
 
-  stop_to_vertex_.reserve(stops.size());
+  stop_vertexes_.reserve(stops.size());
 
   for (std::string_view stop : stops) {
-    stop_to_vertex_.emplace(stop, StopVertexes{start, end});
+    stop_vertexes_.emplace(stop, StopVertexes{start, end});
 
     start += 2;
     end += 2;
@@ -27,58 +27,49 @@ void TransportRouter::BuildVertexesForStops(
 }
 
 void TransportRouter::AddBusRouteEdges(const catalogue::Bus &bus) {
-  const auto &distances =
-      catalogue_.GetAllDistancesOnTheRoute(bus.number, settings_.bus_velocity_);
-
-  graph::VertexId from{0};
-  graph::VertexId to{0};
-
-  for (const auto &[route, info] : distances) {
-    from = stop_to_vertex_[route.first].end;
-    to = stop_to_vertex_[route.second].start;
-
-    auto edge = graph::Edge<Weight>{from, to, info.time};
-
+  for (const auto &[route, info] :
+       catalogue_.GetAllDistancesOnTheRoute(bus.number, settings_.velocity_)) {
+    auto edge =
+        graph::Edge<Weight>{stop_vertexes_[route.first].end,
+                            stop_vertexes_[route.second].start, info.time};
     routes_->AddEdge(edge);
-    edge_to_response_.emplace(
+    edge_responses_.emplace(
         edge, BusResponse(info.time, bus.number, info.stops_count));
   }
 }
 
 void TransportRouter::BuildRoutesGraph(
     const std::deque<catalogue::Bus> &buses) {
-  routes_ = std::make_unique<Graph>(stop_to_vertex_.size() * 2);
+  routes_ = std::make_unique<Graph>(stop_vertexes_.size() * 2);
 
-  auto wait_time = static_cast<double>(settings_.bus_wait_time_);
+  auto wait_time = static_cast<double>(settings_.wait_time_);
   auto stop_edge = graph::Edge<Weight>{};
 
-  for (auto [stop_name, stop_vertexes] : stop_to_vertex_) {
+  for (auto [stop_name, stop_vertexes] : stop_vertexes_) {
     stop_edge =
         graph::Edge<Weight>{stop_vertexes.start, stop_vertexes.end, wait_time};
 
     routes_->AddEdge(stop_edge);
-    edge_to_response_.emplace(stop_edge, WaitResponse(wait_time, stop_name));
+    edge_responses_.emplace(stop_edge, WaitResponse(wait_time, stop_name));
   }
 
-  for (const auto &bus : buses)
+  for (const auto &bus : buses) {
     AddBusRouteEdges(bus);
+  }
 }
 
-ResponseDataOpt TransportRouter::BuildRoute(std::string_view from,
+DataResponseOpt TransportRouter::BuildRoute(std::string_view from,
                                             std::string_view to) const {
-  ResponseDataOpt response{std::nullopt};
+  DataResponseOpt response{std::nullopt};
 
-  graph::VertexId id_from = stop_to_vertex_.at(from).start;
-  graph::VertexId id_to = stop_to_vertex_.at(to).start;
-
-  if (auto route = router_->BuildRoute(id_from, id_to)) {
-    response.emplace(ResponseData{});
+  if (auto route = router_->BuildRoute(stop_vertexes_.at(from).start,
+                                       stop_vertexes_.at(to).start)) {
+    response.emplace(DataResponse{});
     response->total_time = route->weight;
 
     for (auto edge_id : route->edges) {
-      graph::Edge<Weight> edge = routes_->GetEdge(edge_id);
-
-      response->items.emplace_back(edge_to_response_.at(edge));
+      response->items.emplace_back(
+          edge_responses_.at(routes_->GetEdge(edge_id)));
     }
   }
 

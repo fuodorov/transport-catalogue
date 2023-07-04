@@ -94,7 +94,7 @@ struct RouteItemVisitor {
   }
 };
 
-void MakeRouteResponse(int request_id, const routing::ResponseData &route_info,
+void MakeRouteResponse(int request_id, const routing::DataResponse &route_info,
                        json::Builder &response) {
   response.StartDict()
       .Key("request_id"s)
