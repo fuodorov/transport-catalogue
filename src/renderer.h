@@ -5,8 +5,8 @@
 #include <cstdlib>
  
 #include "domain.h"
-#include "geo.h"
-#include "svg.h"
+#include "geo/geo.h"
+#include "svg/svg.h"
 
 using namespace domain;
 

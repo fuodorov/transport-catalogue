@@ -1,4 +1,4 @@
-#include "json_reader.h"
+#include "reader.h"
 
 namespace transport_catalogue {
 namespace detail {

@@ -1,4 +1,4 @@
-#include "map_renderer.h"
+#include "renderer.h"
 
 namespace map_renderer {
 

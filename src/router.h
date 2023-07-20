@@ -1,138 +1,88 @@
 #pragma once
 
-#include "graph.h"
+#include "catalogue.h"
+#include "graph/router.h"
+#include "domain.h"
 
-#include <algorithm>
-#include <cassert>
-#include <cstdint>
-#include <iterator>
-#include <optional>
-#include <stdexcept>
+#include <deque>
 #include <unordered_map>
-#include <utility>
-#include <vector>
+#include <iostream>
 
-namespace graph {
+namespace transport_catalogue {
+namespace detail {
+namespace router {
 
-template <typename Weight>
-class Router {
-using Graph = DirectedWeightedGraph<Weight>;
+using namespace domain;
+using namespace graph;
+    
+static const uint16_t KILOMETER = 1000;
+static const uint16_t HOUR = 60;    
 
+class TransportRouter {
 public:
-    explicit Router(const Graph& graph);
+	void set_routing_settings(RoutingSettings routing_settings);
+	const RoutingSettings& get_routing_settings() const;
 
-    struct RouteInfo {
-        Weight weight;
-        std::vector<EdgeId> edges;
-    };
+	void build_router(TransportCatalogue& transport_catalogue);
+
+	const DirectedWeightedGraph<double>& get_graph() const;
+    const Router<double>& get_router() const;
+    const std::variant<StopEdge, BusEdge>& get_edge(EdgeId id) const;
     
-    void build() {
-		initialize_routes_internal_data(graph_);
-		const size_t vertex_count = graph_.get_vertex_count();
+	std::optional<RouterByStop> get_router_by_stop(Stop* stop) const;
+	std::optional<RouteInfo> get_route_info(VertexId start, VertexId end) const;
+
+	const std::unordered_map<Stop*, RouterByStop>& get_stop_to_vertex() const;
+	const std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>>& get_edge_id_to_edge() const;
+    
+    std::deque<Stop*> get_stops_ptr(TransportCatalogue& transport_catalogue);
+    std::deque<Bus*> get_bus_ptr(TransportCatalogue& transport_catalogue);
         
-		for (VertexId vertex_through = 0; vertex_through < vertex_count; ++vertex_through) {
-			relax_routes_internal_data_through_vertex(vertex_count, vertex_through);
-		}
-	}
+	void add_edge_to_stop();
+	void add_edge_to_bus(TransportCatalogue& transport_catalogue);
     
-    std::optional<RouteInfo> build_route(VertexId from, VertexId to) const;
+    void set_stops(const std::deque<Stop*>& stops);
+    void set_graph(TransportCatalogue& transport_catalogue);
 
-private:
-    struct RouteInternalData {
-        Weight weight;
-        std::optional<EdgeId> prev_edge;
-    };
+	Edge<double> make_edge_to_bus(Stop* start, Stop* end, const double distance) const;
+
+	template <typename Iterator>
+	void parse_bus_to_edges(Iterator first, 
+                            Iterator last,
+                            const TransportCatalogue& transport_catalogue, 
+                            const Bus* bus);
     
-    using RoutesInternalData = std::vector<std::vector<std::optional<RouteInternalData>>>;
-
-    void initialize_routes_internal_data(const Graph& graph) {
-        const size_t vertex_count = graph.get_vertex_count();
-        
-        for (VertexId vertex = 0; vertex < vertex_count; ++vertex) {
-            routes_internal_data_[vertex][vertex] = RouteInternalData{ZERO_WEIGHT, std::nullopt};
-            
-            for (const EdgeId edge_id : graph.get_incident_edges(vertex)) {
-                const auto& edge = graph.get_edge(edge_id);
-                
-                if (edge.weight < ZERO_WEIGHT) {
-                    throw std::domain_error("Edges' weights should be non-negative");
-                }
-                
-                auto& route_internal_data = routes_internal_data_[vertex][edge.to];
-                if (!route_internal_data || route_internal_data->weight > edge.weight) {
-                    route_internal_data = RouteInternalData{edge.weight, edge_id};
-                }
-            }
-        }
-    }
-
-    void relax_route(VertexId vertex_from, VertexId vertex_to, 
-                     const RouteInternalData& route_from,
-                     const RouteInternalData& route_to) {
-                     
-        auto& route_relaxing = routes_internal_data_[vertex_from][vertex_to];
-        const Weight candidate_weight = route_from.weight + route_to.weight;
-        
-        if (!route_relaxing || candidate_weight < route_relaxing->weight) {
-            route_relaxing = {candidate_weight,
-                              route_to.prev_edge ? route_to.prev_edge : route_from.prev_edge};
-        }
-    }
-
-    void relax_routes_internal_data_through_vertex(size_t vertex_count, VertexId vertex_through) {
+private:    
+    std::unordered_map<Stop*, RouterByStop> stop_to_router_;
+	std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>> edge_id_to_edge_;
     
-        for (VertexId vertex_from = 0; vertex_from < vertex_count; ++vertex_from) {
-        
-            if (const auto& route_from = routes_internal_data_[vertex_from][vertex_through]) {
-            
-                for (VertexId vertex_to = 0; vertex_to < vertex_count; ++vertex_to) {
-                
-                    if (const auto& route_to = routes_internal_data_[vertex_through][vertex_to]) {
-                        relax_route(vertex_from, vertex_to, *route_from, *route_to);
-                    }
-                }
-            }
-        }
-    }
+	std::unique_ptr<DirectedWeightedGraph<double>> graph_;
+	std::unique_ptr<Router<double>> router_;
     
-    static constexpr Weight ZERO_WEIGHT{};
-    const Graph& graph_;
-    RoutesInternalData routes_internal_data_;
+    RoutingSettings routing_settings_;
 };
 
-template <typename Weight>
-Router<Weight>::Router(const Graph& graph) : graph_(graph)
-                                           , routes_internal_data_(graph.get_vertex_count()
-                                           , std::vector<std::optional<RouteInternalData>>(graph.get_vertex_count())) {
-    initialize_routes_internal_data(graph);
+template <typename Iterator>
+void TransportRouter::parse_bus_to_edges(Iterator first, 
+                                         Iterator last,
+                                         const TransportCatalogue& transport_catalogue, 
+                                         const Bus* bus) {
+    
+    for (auto it = first; it != last; ++it) {
+        size_t distance = 0;
+        size_t span = 0;
 
-    const size_t vertex_count = graph.get_vertex_count();
-    for (VertexId vertex_through = 0; vertex_through < vertex_count; ++vertex_through) {
-        relax_routes_internal_data_through_vertex(vertex_count, vertex_through);
+        for (auto it2 = std::next(it); it2 != last; ++it2) {
+            distance += transport_catalogue.get_distance_stop(*prev(it2), *it2);
+            ++span;
+
+            EdgeId id = graph_->add_edge(make_edge_to_bus(*it, *it2, distance));
+            
+            edge_id_to_edge_[id] = BusEdge{bus->name, span, graph_->get_edge(id).weight};
+        }
     }
 }
 
-template <typename Weight>
-std::optional<typename Router<Weight>::RouteInfo> Router<Weight>::build_route(VertexId from,
-                                                                              VertexId to) const {
-    const auto& route_internal_data = routes_internal_data_.at(from).at(to);
-    
-    if (!route_internal_data) {
-        return std::nullopt;
-    }
-    
-    const Weight weight = route_internal_data->weight;
-    std::vector<EdgeId> edges;
-    for (std::optional<EdgeId> edge_id = route_internal_data->prev_edge;
-         edge_id;
-         edge_id = routes_internal_data_[from][graph_.get_edge(*edge_id).from]->prev_edge) {
-        
-        edges.push_back(*edge_id);
-    }
-    
-    std::reverse(edges.begin(), edges.end());
-
-    return RouteInfo{weight, std::move(edges)};
-}
-
-}//end namespace graph
+}//end namespace router
+}//end namespace detail
+}//end namespace transport_catalogue

@@ -1,8 +1,8 @@
 #include <fstream>
 #include <iostream>
 
-#include "json_reader.h"
-#include "request_handler.h"
+#include "reader.h"
+#include "handler.h"
 
 using namespace std;
 

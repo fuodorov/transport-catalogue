@@ -8,25 +8,19 @@ find_package(Protobuf REQUIRED)
 
 find_package(Threads REQUIRED)
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS transport_catalogue.proto svg.proto map_renderer.proto graph.proto transport_router.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS catalogue.proto svg.proto renderer.proto graph.proto router.proto)
 
-set(UTILITY geo.h geo.cpp ranges.h)
+set(GEO geo/geo.h geo/geo.cpp)
+set(GRAPH graph/graph.h graph/router.h graph/ranges.h graph.proto)
+set(SVG svg/svg.h svg/svg.cpp svg.proto)
+set(JSON json/json.h json/json.cpp json/builder.h json/builder.cpp)
+set(CATALOGUE domain.h domain.cpp catalogue.h catalogue.cpp reader.h reader.cpp catalogue.proto)
+set(HANDLER handler.h handler.cpp)
+set(ROUTER router.h router.cpp router.proto)
+set(RENDERER renderer.h renderer.cpp renderer.proto)
+set(SERIALIZER serialization.h serialization.cpp)
 
-set(TRANSPORT_CATALOGUE domain.h domain.cpp transport_catalogue.h transport_catalogue.cpp transport_catalogue.proto)
-                      
-set(ROUTER graph.h graph.proto router.h transport_router.h transport_router.cpp transport_router.proto)
-                              
-set(JSON json.h json.cpp json_builder.h json_builder.cpp json_reader.h json_reader.cpp)
-               
-set(SVG svg.h svg.cpp svg.proto)
-        
-set(MAP_RENDERER map_renderer.h map_renderer.cpp map_renderer.proto)
-              
-set(SERIALIZATION serialization.h serialization.cpp)
-                 
-set(REQUEST_HANDLER request_handler.h request_handler.cpp)
-
-add_executable(transport_catalogue main.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${UTILITY} ${TRANSPORT_CATALOGUE} ${ROUTER} ${JSON} ${SVG} ${MAP_RENDERER} ${SERIALIZATION} ${REQUEST_HANDLER})
+add_executable(transport_catalogue main.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${GEO} ${GRAPH} ${CATALOGUE} ${ROUTER} ${JSON} ${SVG} ${RENDERER} ${SERIALIZER} ${HANDLER})
 
 target_include_directories(transport_catalogue PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_include_directories(transport_catalogue PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

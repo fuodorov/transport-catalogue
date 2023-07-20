@@ -5,8 +5,8 @@
 #include <string>
 #include <variant>
 
-#include "geo.h"
-#include "graph.h"
+#include "geo/geo.h"
+#include "graph/graph.h"
 
 namespace domain {
 

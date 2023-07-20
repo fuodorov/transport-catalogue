@@ -1,9 +1,9 @@
 #pragma once
 
-#include "transport_catalogue.h"
-#include "map_renderer.h"
-#include "json_builder.h"
-#include "transport_router.h"
+#include "catalogue.h"
+#include "renderer.h"
+#include "json/builder.h"
+#include "router.h"
 
 using namespace transport_catalogue;
 using namespace map_renderer;

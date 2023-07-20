@@ -1,9 +1,9 @@
 #pragma once
-#include "json.h"
+#include "json/json.h"
 #include "serialization.h"
-#include "transport_catalogue.h"
-#include "map_renderer.h"
-#include "transport_router.h"
+#include "catalogue.h"
+#include "renderer.h"
+#include "router.h"
 
 namespace transport_catalogue {
 namespace detail {

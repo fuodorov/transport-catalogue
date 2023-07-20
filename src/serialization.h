@@ -1,15 +1,15 @@
 #pragma once
 
-#include "transport_catalogue.h"
-#include "transport_catalogue.pb.h"
+#include "catalogue.h"
+#include "catalogue.pb.h"
 
 #include "svg.pb.h"
 
-#include "map_renderer.h"
-#include "map_renderer.pb.h"
+#include "renderer.h"
+#include "renderer.pb.h"
 
-#include "transport_router.h"
-#include "transport_router.pb.h"
+#include "router.h"
+#include "router.pb.h"
 
 #include <iostream>
 
