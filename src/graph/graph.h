@@ -70,7 +70,7 @@ const Edge<Weight>& DirectedWeightedGraph<Weight>::get_edge(EdgeId edge_id) cons
 template <typename Weight>
 typename DirectedWeightedGraph<Weight>::IncidentEdgesRange DirectedWeightedGraph<Weight>::get_incident_edges(
     VertexId vertex) const {
-    return ranges::as_range(incidence_lists_.at(vertex));
+    return ranges::AsRange(incidence_lists_.at(vertex));
 }
 
 }  // end namespace graph

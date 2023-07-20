@@ -13,7 +13,6 @@ public:
     using ValueType = typename std::iterator_traits<It>::value_type;
 
     Range(It begin, It end) : begin_(begin), end_(end) {}
-
     It begin() const {
         return begin_;
     }
@@ -27,8 +26,8 @@ private:
 };
 
 template <typename C>
-auto as_range(const C& container) {
+auto AsRange(const C &container) {
     return Range{container.begin(), container.end()};
 }
 
-}  // end namespace ranges
+}  // namespace ranges
