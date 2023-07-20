@@ -15,60 +15,54 @@ using namespace request_handler;
 using namespace serialization;
 
 void PrintUsage(std::ostream &stream = std::cerr) {
-  stream << "Usage: transport_catalogue [make_base|process_requests]\n"sv;
+    stream << "Usage: transport_catalogue [make_base|process_requests]\n"sv;
 }
 
 int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        PrintUsage();
+        return 1;
+    }
 
-  if (argc != 2) {
-    PrintUsage();
-    return 1;
-  }
+    const std::string_view mode(argv[1]);
 
-  const std::string_view mode(argv[1]);
+    TransportCatalogue transport_catalogue;
 
-  TransportCatalogue transport_catalogue;
+    RenderSettings render_settings;
+    RoutingSettings routing_settings;
 
-  RenderSettings render_settings;
-  RoutingSettings routing_settings;
+    SerializationSettings serialization_settings;
 
-  SerializationSettings serialization_settings;
+    JSONReader json_reader;
+    vector<StatRequest> stat_request;
 
-  JSONReader json_reader;
-  vector<StatRequest> stat_request;
+    if (mode == "make_base"sv) {
+        json_reader = JSONReader(cin);
 
-  if (mode == "make_base"sv) {
+        json_reader.parse_node_make_base(transport_catalogue, render_settings, routing_settings,
+                                         serialization_settings);
 
-    json_reader = JSONReader(cin);
+        ofstream out_file(serialization_settings.file_name, ios::binary);
+        catalogue_serialization(transport_catalogue, render_settings, routing_settings, out_file);
 
-    json_reader.parse_node_make_base(transport_catalogue, render_settings,
-                                     routing_settings, serialization_settings);
+    } else if (mode == "process_requests"sv) {
+        json_reader = JSONReader(cin);
 
-    ofstream out_file(serialization_settings.file_name, ios::binary);
-    catalogue_serialization(transport_catalogue, render_settings,
-                            routing_settings, out_file);
+        json_reader.parse_node_process_requests(stat_request, serialization_settings);
 
-  } else if (mode == "process_requests"sv) {
+        ifstream in_file(serialization_settings.file_name, ios::binary);
 
-    json_reader = JSONReader(cin);
+        Catalogue catalogue = catalogue_deserialization(in_file);
 
-    json_reader.parse_node_process_requests(stat_request,
-                                            serialization_settings);
+        RequestHandler request_handler;
 
-    ifstream in_file(serialization_settings.file_name, ios::binary);
+        request_handler.execute_queries(catalogue.transport_catalogue_, stat_request, catalogue.render_settings_,
+                                        catalogue.routing_settings_);
 
-    Catalogue catalogue = catalogue_deserialization(in_file);
+        print(request_handler.get_document(), cout);
 
-    RequestHandler request_handler;
-
-    request_handler.execute_queries(catalogue.transport_catalogue_,
-                                    stat_request, catalogue.render_settings_,
-                                    catalogue.routing_settings_);
-
-    print(request_handler.get_document(), cout);
-
-  } else {
-    PrintUsage();
-    return 1;
-  }
+    } else {
+        PrintUsage();
+        return 1;
+    }
 }

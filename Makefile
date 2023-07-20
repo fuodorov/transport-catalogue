@@ -8,7 +8,7 @@ build: ## build program
 	cd build && cmake ../src && cmake --build .
 
 format: ## autoformat code with clang-format
-	clang-format -i src/*.cpp src/*.h
+	clang-format -i src/*.cpp src/*.h -style=file
 
 deps: ## install dependencies
 	sudo apt install -y clang-format
