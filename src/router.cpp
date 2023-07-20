@@ -23,7 +23,7 @@ const DirectedWeightedGraph<double> &TransportRouter::get_graph() const {
 const Router<double> &TransportRouter::get_router() const {
     return *router_;
 }
-const std::variant<StopEdge, BusEdge> &TransportRouter::get_edge(EdgeId id) const {
+const std::variant<StopEdge, BusEdge> &TransportRouter::GetEdge(EdgeId id) const {
     return edge_id_to_edge_.at(id);
 }
 
@@ -42,7 +42,7 @@ std::optional<RouteInfo> TransportRouter::get_route_info(VertexId start, graph::
         result.total_time = route_info->weight;
 
         for (const auto edge : route_info->edges) {
-            result.edges.emplace_back(get_edge(edge));
+            result.edges.emplace_back(GetEdge(edge));
         }
 
         return result;
@@ -93,7 +93,7 @@ void TransportRouter::set_stops(const std::deque<Stop *> &stops) {
 void TransportRouter::add_edge_to_stop() {
     for (const auto [stop, num] : stop_to_router_) {
         EdgeId id =
-            graph_->add_edge(Edge<double>{num.bus_wait_start, num.bus_wait_end, routing_settings_.bus_wait_time});
+            graph_->AddEdge(Edge<double>{num.bus_wait_start, num.bus_wait_end, routing_settings_.bus_wait_time});
 
         edge_id_to_edge_[id] = StopEdge{stop->name, routing_settings_.bus_wait_time};
     }

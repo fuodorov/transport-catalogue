@@ -28,7 +28,7 @@ public:
 
     void build() {
         initialize_routes_internal_data(graph_);
-        const size_t vertex_count = graph_.get_vertex_count();
+        const size_t vertex_count = graph_.GetVertexCount();
 
         for (VertexId vertex_through = 0; vertex_through < vertex_count; ++vertex_through) {
             relax_routes_internal_data_through_vertex(vertex_count, vertex_through);
@@ -46,13 +46,13 @@ private:
     using RoutesInternalData = std::vector<std::vector<std::optional<RouteInternalData>>>;
 
     void initialize_routes_internal_data(const Graph& graph) {
-        const size_t vertex_count = graph.get_vertex_count();
+        const size_t vertex_count = graph.GetVertexCount();
 
         for (VertexId vertex = 0; vertex < vertex_count; ++vertex) {
             routes_internal_data_[vertex][vertex] = RouteInternalData{ZERO_WEIGHT, std::nullopt};
 
-            for (const EdgeId edge_id : graph.get_incident_edges(vertex)) {
-                const auto& edge = graph.get_edge(edge_id);
+            for (const EdgeId edge_id : graph.GetIncidentEdges(vertex)) {
+                const auto& edge = graph.GetEdge(edge_id);
 
                 if (edge.weight < ZERO_WEIGHT) {
                     throw std::domain_error("Edges' weights should be non-negative");
@@ -96,11 +96,11 @@ private:
 template <typename Weight>
 Router<Weight>::Router(const Graph& graph)
     : graph_(graph),
-      routes_internal_data_(graph.get_vertex_count(),
-                            std::vector<std::optional<RouteInternalData>>(graph.get_vertex_count())) {
+      routes_internal_data_(graph.GetVertexCount(),
+                            std::vector<std::optional<RouteInternalData>>(graph.GetVertexCount())) {
     initialize_routes_internal_data(graph);
 
-    const size_t vertex_count = graph.get_vertex_count();
+    const size_t vertex_count = graph.GetVertexCount();
     for (VertexId vertex_through = 0; vertex_through < vertex_count; ++vertex_through) {
         relax_routes_internal_data_through_vertex(vertex_count, vertex_through);
     }
@@ -117,7 +117,7 @@ std::optional<typename Router<Weight>::RouteInfo> Router<Weight>::build_route(Ve
     const Weight weight = route_internal_data->weight;
     std::vector<EdgeId> edges;
     for (std::optional<EdgeId> edge_id = route_internal_data->prev_edge; edge_id;
-         edge_id = routes_internal_data_[from][graph_.get_edge(*edge_id).from]->prev_edge) {
+         edge_id = routes_internal_data_[from][graph_.GetEdge(*edge_id).from]->prev_edge) {
         edges.push_back(*edge_id);
     }
 

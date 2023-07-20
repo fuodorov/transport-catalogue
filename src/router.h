@@ -27,7 +27,7 @@ public:
 
     const DirectedWeightedGraph<double> &get_graph() const;
     const Router<double> &get_router() const;
-    const std::variant<StopEdge, BusEdge> &get_edge(EdgeId id) const;
+    const std::variant<StopEdge, BusEdge> &GetEdge(EdgeId id) const;
 
     std::optional<RouterByStop> get_router_by_stop(Stop *stop) const;
     std::optional<RouteInfo> get_route_info(VertexId start, VertexId end) const;
@@ -71,9 +71,9 @@ void TransportRouter::parse_bus_to_edges(Iterator first, Iterator last, const Tr
             distance += transport_catalogue.get_distance_stop(*prev(it2), *it2);
             ++span;
 
-            EdgeId id = graph_->add_edge(make_edge_to_bus(*it, *it2, distance));
+            EdgeId id = graph_->AddEdge(make_edge_to_bus(*it, *it2, distance));
 
-            edge_id_to_edge_[id] = BusEdge{bus->name, span, graph_->get_edge(id).weight};
+            edge_id_to_edge_[id] = BusEdge{bus->name, span, graph_->GetEdge(id).weight};
         }
     }
 }
