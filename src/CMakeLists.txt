@@ -18,7 +18,7 @@ set(CATALOGUE domain.h domain.cpp catalogue.h catalogue.cpp reader.h reader.cpp 
 set(HANDLER handler.h handler.cpp)
 set(ROUTER router.h router.cpp router.proto)
 set(RENDERER renderer.h renderer.cpp renderer.proto)
-set(SERIALIZER serialization.h serialization.cpp)
+set(SERIALIZER serializer.h serializer.cpp)
 
 add_executable(transport_catalogue main.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${GEO} ${GRAPH} ${CATALOGUE} ${ROUTER} ${JSON} ${SVG} ${RENDERER} ${SERIALIZER} ${HANDLER})
 
