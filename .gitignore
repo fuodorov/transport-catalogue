@@ -1,4 +1,8 @@
-main
+# Build products
+build/
+
+# Db
+*.db
 
 # Prerequisites
 *.d
