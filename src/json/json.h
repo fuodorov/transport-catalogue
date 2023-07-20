@@ -7,7 +7,6 @@
 #include <vector>
 
 namespace transport_catalogue {
-
 namespace json {
 
 class Node;
@@ -85,5 +84,4 @@ Document Load(std::istream& input);
 void Print(const Document& document, std::ostream& output);
 
 }  // end namespace json
-
 }  // end namespace transport_catalogue

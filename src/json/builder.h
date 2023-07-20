@@ -7,7 +7,6 @@
 #include "json.h"
 
 namespace transport_catalogue {
-
 namespace json {
 namespace builder {
 
@@ -90,5 +89,4 @@ class ArrayContext : public BaseContext {
 
 }  // end namespace builder
 }  // end namespace json
-
 }  // end namespace transport_catalogue

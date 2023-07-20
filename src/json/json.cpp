@@ -3,7 +3,6 @@
 using namespace std;
 
 namespace transport_catalogue {
-
 namespace json {
 namespace {
 
@@ -444,5 +443,4 @@ void Print(const Document& document, std::ostream& output) {
 }
 
 }  // end namespace json
-
 }  // end namespace transport_catalogue
