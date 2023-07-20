@@ -78,7 +78,7 @@ double TransportCatalogue::get_length(Bus *bus) {
       next(bus->stops.begin()), bus->stops.end(), bus->stops.begin(), 0.0,
       std::plus<>{}, [](const Stop *lhs, const Stop *rhs) {
         return geo::CalculateDistance({(*lhs).latitude, (*lhs).longitude},
-                                     {(*rhs).latitude, (*rhs).longitude});
+                                      {(*rhs).latitude, (*rhs).longitude});
       });
 }
 

@@ -56,7 +56,7 @@ void MapRenderer::set_route_text_common_properties(svg::Text &text,
 
   text.SetPosition(position);
   text.SetOffset({render_settings_.bus_label_offset_.first,
-                   render_settings_.bus_label_offset_.second});
+                  render_settings_.bus_label_offset_.second});
   text.SetFontSize(render_settings_.bus_label_font_size_);
   text.SetFontFamily("Verdana");
   text.SetFontWeight("bold");
@@ -99,7 +99,7 @@ void MapRenderer::set_stops_text_common_properties(svg::Text &text,
 
   text.SetPosition(position);
   text.SetOffset({render_settings_.stop_label_offset_.first,
-                   render_settings_.stop_label_offset_.second});
+                  render_settings_.stop_label_offset_.second});
   text.SetFontSize(render_settings_.stop_label_font_size_);
   text.SetFontFamily("Verdana");
   text.SetData(name);
