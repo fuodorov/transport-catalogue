@@ -1,7 +1,6 @@
 #include "reader.h"
 
 namespace transport_catalogue {
-
 namespace json {
 
 JSONReader::JSONReader(Document doc) : document_(std::move(doc)) {}
@@ -379,5 +378,4 @@ void JSONReader::parse_node_process_requests(
 }
 
 }  // end namespace json
-
 }  // end namespace transport_catalogue
