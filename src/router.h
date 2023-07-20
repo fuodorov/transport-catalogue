@@ -9,7 +9,7 @@
 #include "graph/router.h"
 
 namespace transport_catalogue {
-namespace detail {
+
 namespace router {
 
 using namespace domain;
@@ -84,5 +84,5 @@ void TransportRouter::parse_bus_to_edges(
 }
 
 }  // end namespace router
-}  // end namespace detail
+
 }  // end namespace transport_catalogue

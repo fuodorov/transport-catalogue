@@ -152,11 +152,11 @@ Node LoadNumber(std::istream &input) {
     read_digits();
   }
 
-  bool is_int = true;
+  bool IsInt = true;
   if (input.peek() == '.') {
     read_char();
     read_digits();
-    is_int = false;
+    IsInt = false;
   }
 
   if (int ch = input.peek(); ch == 'e' || ch == 'E') {
@@ -165,11 +165,11 @@ Node LoadNumber(std::istream &input) {
       read_char();
     }
     read_digits();
-    is_int = false;
+    IsInt = false;
   }
 
   try {
-    if (is_int) {
+    if (IsInt) {
       try {
         return std::stoi(parsed_num);
       } catch (...) {

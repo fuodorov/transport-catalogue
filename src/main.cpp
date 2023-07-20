@@ -7,8 +7,8 @@
 using namespace std;
 
 using namespace transport_catalogue;
-using namespace transport_catalogue::detail::json;
-using namespace transport_catalogue::detail::router;
+using namespace transport_catalogue::json;
+using namespace transport_catalogue::router;
 
 using namespace map_renderer;
 using namespace request_handler;
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
                                     stat_request, catalogue.render_settings_,
                                     catalogue.routing_settings_);
 
-    print(request_handler.get_document(), cout);
+    Print(request_handler.get_document(), cout);
 
   } else {
     PrintUsage();

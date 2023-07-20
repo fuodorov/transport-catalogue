@@ -6,7 +6,7 @@
 #include "serializer.h"
 
 namespace transport_catalogue {
-namespace detail {
+
 namespace json {
 
 class JSONReader {
@@ -47,5 +47,5 @@ class JSONReader {
 };
 
 }  // end namespace json
-}  // end namespace detail
+
 }  // end namespace transport_catalogue

@@ -261,7 +261,7 @@ json::Node MakeResponse(const TransportCatalogue &catalogue,
       MakeMapImageResponse(
           id, RenderTransportMap(catalogue, settings.visualization), response);
     } else if (type == "Route"s) {
-      if (!router.has_value()) {
+      if (!router.has_Value()) {
         router.emplace(TransportRouter(catalogue, settings.routing));
       }
 

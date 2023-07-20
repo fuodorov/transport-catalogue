@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace transport_catalogue {
-namespace detail {
+
 namespace json {
 
 class Node;
@@ -35,30 +35,30 @@ class Node final : private std::variant<std::nullptr_t, Array, Dict, bool, int,
   Node(std::nullptr_t);
   Node(double value);
 
-  const Array& as_array() const;
-  const Dict& as_dict() const;
-  int as_int() const;
-  double as_double() const;
-  bool as_bool() const;
-  const std::string& as_string() const;
+  const Array& AsArray() const;
+  const Dict& AsDict() const;
+  int AsInt() const;
+  double AsDouble() const;
+  bool AsBool() const;
+  const std::string& AsString() const;
 
-  bool is_null() const;
-  bool is_int() const;
-  bool is_double() const;
-  bool is_real_double() const;
-  bool is_bool() const;
-  bool is_string() const;
-  bool is_array() const;
-  bool is_dict() const;
+  bool IsNull() const;
+  bool IsInt() const;
+  bool IsDouble() const;
+  bool IsRealDouble() const;
+  bool IsBool() const;
+  bool IsString() const;
+  bool IsArray() const;
+  bool IsDict() const;
 
-  const Value& get_value() const;
+  const Value& GetValue() const;
 
  private:
   Value value_;
 };
 
 inline bool operator==(const Node& lhs, const Node& rhs) {
-  return lhs.get_value() == rhs.get_value();
+  return lhs.GetValue() == rhs.GetValue();
 }
 inline bool operator!=(const Node& lhs, const Node& rhs) {
   return !(lhs == rhs);
@@ -68,22 +68,22 @@ class Document {
  public:
   Document() = default;
   explicit Document(Node root);
-  const Node& get_root() const;
+  const Node& GetRoot() const;
 
  private:
   Node root_;
 };
 
 inline bool operator==(const Document& lhs, const Document& rhs) {
-  return lhs.get_root() == rhs.get_root();
+  return lhs.GetRoot() == rhs.GetRoot();
 }
 inline bool operator!=(const Document& lhs, const Document& rhs) {
   return !(lhs == rhs);
 }
 
-Document load(std::istream& input);
-void print(const Document& document, std::ostream& output);
+Document Load(std::istream& input);
+void Print(const Document& document, std::ostream& output);
 
 }  // end namespace json
-}  // end namespace detail
+
 }  // end namespace transport_catalogue

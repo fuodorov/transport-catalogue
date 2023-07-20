@@ -7,37 +7,37 @@ struct EdgeInfoGetter {
     using namespace std::literals;
 
     return Builder{}
-        .start_dict()
-        .key("type")
-        .value("Wait")
-        .key("stop_name")
-        .value(std::string(edge_info.name))
-        .key("time")
-        .value(edge_info.time)
-        .end_dict()
-        .build();
+        .StartDict()
+        .Key("type")
+        .Value("Wait")
+        .Key("stop_name")
+        .Value(std::string(edge_info.name))
+        .Key("time")
+        .Value(edge_info.time)
+        .EndDict()
+        .Build();
   }
 
   Node operator()(const BusEdge &edge_info) {
     using namespace std::literals;
 
     return Builder{}
-        .start_dict()
-        .key("type")
-        .value("Bus")
-        .key("bus")
-        .value(std::string(edge_info.bus_name))
-        .key("span_count")
-        .value(static_cast<int>(edge_info.span_count))
-        .key("time")
-        .value(edge_info.time)
-        .end_dict()
-        .build();
+        .StartDict()
+        .Key("type")
+        .Value("Bus")
+        .Key("bus")
+        .Value(std::string(edge_info.bus_name))
+        .Key("span_count")
+        .Value(static_cast<int>(edge_info.span_count))
+        .Key("time")
+        .Value(edge_info.time)
+        .EndDict()
+        .Build();
   }
 };
 
-Node RequestHandler::execute_make_node_stop(int id_request,
-                                            const StopQueryResult &stop_info) {
+Node RequestHandler::execute_MakeNode_stop(int id_request,
+                                           const StopQueryResult &stop_info) {
   Node result;
   Array buses;
   Builder builder;
@@ -45,71 +45,71 @@ Node RequestHandler::execute_make_node_stop(int id_request,
   std::string str_not_found = "not found";
 
   if (stop_info.not_found) {
-    builder.start_dict()
-        .key("request_id")
-        .value(id_request)
-        .key("error_message")
-        .value(str_not_found)
-        .end_dict();
+    builder.StartDict()
+        .Key("request_id")
+        .Value(id_request)
+        .Key("error_message")
+        .Value(str_not_found)
+        .EndDict();
 
-    result = builder.build();
+    result = builder.Build();
 
   } else {
-    builder.start_dict()
-        .key("request_id")
-        .value(id_request)
-        .key("buses")
-        .start_array();
+    builder.StartDict()
+        .Key("request_id")
+        .Value(id_request)
+        .Key("buses")
+        .StartArray();
 
     for (std::string bus_name : stop_info.buses_name) {
-      builder.value(bus_name);
+      builder.Value(bus_name);
     }
 
-    builder.end_array().end_dict();
+    builder.EndArray().EndDict();
 
-    result = builder.build();
+    result = builder.Build();
   }
 
   return result;
 }
 
-Node RequestHandler::execute_make_node_bus(int id_request,
-                                           const BusQueryResult &bus_info) {
+Node RequestHandler::execute_MakeNode_bus(int id_request,
+                                          const BusQueryResult &bus_info) {
   Node result;
   std::string str_not_found = "not found";
 
   if (bus_info.not_found) {
     result = Builder{}
-                 .start_dict()
-                 .key("request_id")
-                 .value(id_request)
-                 .key("error_message")
-                 .value(str_not_found)
-                 .end_dict()
-                 .build();
+                 .StartDict()
+                 .Key("request_id")
+                 .Value(id_request)
+                 .Key("error_message")
+                 .Value(str_not_found)
+                 .EndDict()
+                 .Build();
   } else {
     result = Builder{}
-                 .start_dict()
-                 .key("request_id")
-                 .value(id_request)
-                 .key("curvature")
-                 .value(bus_info.curvature)
-                 .key("route_length")
-                 .value(bus_info.route_length)
-                 .key("stop_count")
-                 .value(bus_info.stops_on_route)
-                 .key("unique_stop_count")
-                 .value(bus_info.unique_stops)
-                 .end_dict()
-                 .build();
+                 .StartDict()
+                 .Key("request_id")
+                 .Value(id_request)
+                 .Key("curvature")
+                 .Value(bus_info.curvature)
+                 .Key("route_length")
+                 .Value(bus_info.route_length)
+                 .Key("stop_count")
+                 .Value(bus_info.stops_on_route)
+                 .Key("unique_stop_count")
+                 .Value(bus_info.unique_stops)
+                 .EndDict()
+                 .Build();
   }
 
   return result;
 }
 
-Node RequestHandler::execute_make_node_map(int id_request,
-                                           TransportCatalogue &catalogue_,
-                                           RenderSettings render_settings) {
+Node RequestHandler::execute_MakeNode_map(int id_request,
+                                          TransportCatalogue &catalogue_,
+                                          RenderSettings render_settings) {
   Node result;
 
   std::ostringstream map_stream;
@@ -124,32 +124,32 @@ Node RequestHandler::execute_make_node_map(int id_request,
   map_str = map_stream.str();
 
   result = Builder{}
-               .start_dict()
-               .key("request_id")
-               .value(id_request)
-               .key("map")
-               .value(map_str)
-               .end_dict()
-               .build();
+               .StartDict()
+               .Key("request_id")
+               .Value(id_request)
+               .Key("map")
+               .Value(map_str)
+               .EndDict()
+               .Build();
 
   return result;
 }
 
-Node RequestHandler::execute_make_node_route(StatRequest &request,
-                                             TransportCatalogue &catalogue,
-                                             TransportRouter &routing) {
+Node RequestHandler::execute_MakeNode_route(StatRequest &request,
+                                            TransportCatalogue &catalogue,
+                                            TransportRouter &routing) {
   const auto &route_info =
       get_route_info(request.from, request.to, catalogue, routing);
 
   if (!route_info) {
     return Builder{}
-        .start_dict()
-        .key("request_id")
-        .value(request.id)
-        .key("error_message")
-        .value("not found")
-        .end_dict()
-        .build();
+        .StartDict()
+        .Key("request_id")
+        .Value(request.id)
+        .Key("error_message")
+        .Value("not found")
+        .EndDict()
+        .Build();
   }
 
   Array items;
@@ -158,15 +158,15 @@ Node RequestHandler::execute_make_node_route(StatRequest &request,
   }
 
   return Builder{}
-      .start_dict()
-      .key("request_id")
-      .value(request.id)
-      .key("total_time")
-      .value(route_info->total_time)
-      .key("items")
-      .value(items)
-      .end_dict()
-      .build();
+      .StartDict()
+      .Key("request_id")
+      .Value(request.id)
+      .Key("total_time")
+      .Value(route_info->total_time)
+      .Key("items")
+      .Value(items)
+      .EndDict()
+      .Build();
 }
 
 void RequestHandler::execute_queries(TransportCatalogue &catalogue,
@@ -182,19 +182,19 @@ void RequestHandler::execute_queries(TransportCatalogue &catalogue,
   for (StatRequest req : stat_requests) {
     if (req.type == "Stop") {
       result_request.push_back(
-          execute_make_node_stop(req.id, stop_query(catalogue, req.name)));
+          execute_MakeNode_stop(req.id, stop_query(catalogue, req.name)));
 
     } else if (req.type == "Bus") {
       result_request.push_back(
-          execute_make_node_bus(req.id, bus_query(catalogue, req.name)));
+          execute_MakeNode_bus(req.id, bus_query(catalogue, req.name)));
 
     } else if (req.type == "Map") {
       result_request.push_back(
-          execute_make_node_map(req.id, catalogue, render_settings));
+          execute_MakeNode_map(req.id, catalogue, render_settings));
 
     } else if (req.type == "Route") {
       result_request.push_back(
-          execute_make_node_route(req, catalogue, transport_router));
+          execute_MakeNode_route(req, catalogue, transport_router));
     }
   }
 

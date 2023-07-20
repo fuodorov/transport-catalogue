@@ -7,9 +7,9 @@
 
 using namespace transport_catalogue;
 using namespace map_renderer;
-using namespace transport_catalogue::detail::json;
-using namespace transport_catalogue::detail::json::builder;
-using namespace transport_catalogue::detail::router;
+using namespace transport_catalogue::json;
+using namespace transport_catalogue::json::builder;
+using namespace transport_catalogue::router;
 
 namespace request_handler {
 
@@ -31,15 +31,14 @@ class RequestHandler {
   StopQueryResult stop_query(TransportCatalogue &catalogue,
                              std::string_view stop_name);
 
-  Node execute_make_node_stop(int id_request,
-                              const StopQueryResult &query_result);
-  Node execute_make_node_bus(int id_request,
-                             const BusQueryResult &query_result);
-  Node execute_make_node_map(int id_request, TransportCatalogue &catalogue,
-                             RenderSettings render_settings);
-  Node execute_make_node_route(StatRequest &request,
-                               TransportCatalogue &catalogue,
-                               TransportRouter &routing);
+  Node execute_MakeNode_stop(int id_request,
+                             const StopQueryResult &query_result);
+  Node execute_MakeNode_bus(int id_request, const BusQueryResult &query_result);
+  Node execute_MakeNode_map(int id_request, TransportCatalogue &catalogue,
+                            RenderSettings render_settings);
+  Node execute_MakeNode_route(StatRequest &request,
+                              TransportCatalogue &catalogue,
+                              TransportRouter &routing);
 
   void execute_queries(TransportCatalogue &catalogue,
                        std::vector<StatRequest> &stat_requests,

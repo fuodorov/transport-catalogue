@@ -1,7 +1,7 @@
 #include "router.h"
 
 namespace transport_catalogue {
-namespace detail {
+
 namespace router {
 
 void TransportRouter::set_routing_settings(RoutingSettings routing_settings) {
@@ -140,5 +140,5 @@ Edge<double> TransportRouter::make_edge_to_bus(Stop *start, Stop *end,
 }
 
 }  // end namespace router
-}  // end namespace detail
+
 }  // end namespace transport_catalogue

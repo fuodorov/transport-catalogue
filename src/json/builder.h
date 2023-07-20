@@ -7,7 +7,7 @@
 #include "json.h"
 
 namespace transport_catalogue {
-namespace detail {
+
 namespace json {
 namespace builder {
 
@@ -17,19 +17,19 @@ class ArrayContext;
 
 class Builder {
  public:
-  Node make_node(const Node::Value& value_);
-  void add_node(const Node& node);
+  Node MakeNode(const Node::Value& value_);
+  void AddNode(const Node& node);
 
-  KeyContext key(const std::string& key_);
-  Builder& value(const Node::Value& value);
+  KeyContext Key(const std::string& key_);
+  Builder& Value(const Node::Value& value);
 
-  DictionaryContext start_dict();
-  Builder& end_dict();
+  DictionaryContext StartDict();
+  Builder& EndDict();
 
-  ArrayContext start_array();
-  Builder& end_array();
+  ArrayContext StartArray();
+  Builder& EndArray();
 
-  Node build();
+  Node Build();
 
  private:
   Node root_;
@@ -40,14 +40,14 @@ class BaseContext {
  public:
   BaseContext(Builder& builder);
 
-  KeyContext key(const std::string& key);
-  Builder& value(const Node::Value& value);
+  KeyContext Key(const std::string& key);
+  Builder& Value(const Node::Value& value);
 
-  DictionaryContext start_dict();
-  Builder& end_dict();
+  DictionaryContext StartDict();
+  Builder& EndDict();
 
-  ArrayContext start_array();
-  Builder& end_array();
+  ArrayContext StartArray();
+  Builder& EndArray();
 
  protected:
   Builder& builder_;
@@ -57,38 +57,38 @@ class KeyContext : public BaseContext {
  public:
   KeyContext(Builder& builder);
 
-  KeyContext key(const std::string& key) = delete;
+  KeyContext Key(const std::string& key) = delete;
 
-  BaseContext end_dict() = delete;
-  BaseContext end_array() = delete;
+  BaseContext EndDict() = delete;
+  BaseContext EndArray() = delete;
 
-  DictionaryContext value(const Node::Value& value);
+  DictionaryContext Value(const Node::Value& value);
 };
 
 class DictionaryContext : public BaseContext {
  public:
   DictionaryContext(Builder& builder);
 
-  DictionaryContext start_dict() = delete;
+  DictionaryContext StartDict() = delete;
 
-  ArrayContext start_array() = delete;
-  Builder& end_array() = delete;
+  ArrayContext StartArray() = delete;
+  Builder& EndArray() = delete;
 
-  Builder& value(const Node::Value& value) = delete;
+  Builder& Value(const Node::Value& value) = delete;
 };
 
 class ArrayContext : public BaseContext {
  public:
   ArrayContext(Builder& builder);
 
-  KeyContext key(const std::string& key) = delete;
+  KeyContext Key(const std::string& key) = delete;
 
-  Builder& end_dict() = delete;
+  Builder& EndDict() = delete;
 
-  ArrayContext value(const Node::Value& value);
+  ArrayContext Value(const Node::Value& value);
 };
 
 }  // end namespace builder
 }  // end namespace json
-}  // end namespace detail
+
 }  // end namespace transport_catalogue
