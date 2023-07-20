@@ -142,17 +142,17 @@ color_serialization(const svg::Color &tc_color) {
   } else if (std::holds_alternative<svg::Rgb>(tc_color)) {
     svg::Rgb rgb = std::get<svg::Rgb>(tc_color);
 
-    color_proto.mutable_rgb()->set_red_(rgb.red_);
-    color_proto.mutable_rgb()->set_green_(rgb.green_);
-    color_proto.mutable_rgb()->set_blue_(rgb.blue_);
+    color_proto.mutable_rgb()->set_red(rgb.red);
+    color_proto.mutable_rgb()->set_green(rgb.green);
+    color_proto.mutable_rgb()->set_blue(rgb.blue);
 
   } else if (std::holds_alternative<svg::Rgba>(tc_color)) {
     svg::Rgba rgba = std::get<svg::Rgba>(tc_color);
 
-    color_proto.mutable_rgba()->set_red_(rgba.red_);
-    color_proto.mutable_rgba()->set_green_(rgba.green_);
-    color_proto.mutable_rgba()->set_blue_(rgba.blue_);
-    color_proto.mutable_rgba()->set_opacity_(rgba.opacity_);
+    color_proto.mutable_rgba()->set_red(rgba.red);
+    color_proto.mutable_rgba()->set_green(rgba.green);
+    color_proto.mutable_rgba()->set_blue(rgba.blue);
+    color_proto.mutable_rgba()->set_opacity(rgba.opacity);
 
   } else if (std::holds_alternative<std::string>(tc_color)) {
     color_proto.set_string_color(std::get<std::string>(tc_color));
@@ -169,19 +169,19 @@ color_deserialization(const transport_catalogue_protobuf::Color &color_proto) {
   if (color_proto.has_rgb()) {
     svg::Rgb rgb;
 
-    rgb.red_ = color_proto.rgb().red_();
-    rgb.green_ = color_proto.rgb().green_();
-    rgb.blue_ = color_proto.rgb().blue_();
+    rgb.red = color_proto.rgb().red();
+    rgb.green = color_proto.rgb().green();
+    rgb.blue = color_proto.rgb().blue();
 
     color = rgb;
 
   } else if (color_proto.has_rgba()) {
     svg::Rgba rgba;
 
-    rgba.red_ = color_proto.rgba().red_();
-    rgba.green_ = color_proto.rgba().green_();
-    rgba.blue_ = color_proto.rgba().blue_();
-    rgba.opacity_ = color_proto.rgba().opacity_();
+    rgba.red = color_proto.rgba().red();
+    rgba.green = color_proto.rgba().green();
+    rgba.blue = color_proto.rgba().blue();
+    rgba.opacity = color_proto.rgba().opacity();
 
     color = rgba;
 
