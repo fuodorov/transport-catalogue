@@ -1,9 +1,10 @@
 #pragma once
 
-#include "json.h"
+#include <memory>
 #include <stack>
 #include <string>
-#include <memory>
+
+#include "json.h"
 
 namespace transport_catalogue {
 namespace detail {
@@ -21,10 +22,10 @@ public:
 
     KeyContext key(const std::string& key_);
     Builder& value(const Node::Value& value);
-    
+
     DictionaryContext start_dict();
     Builder& end_dict();
-    
+
     ArrayContext start_array();
     Builder& end_array();
 
@@ -41,10 +42,10 @@ public:
 
     KeyContext key(const std::string& key);
     Builder& value(const Node::Value& value);
-    
+
     DictionaryContext start_dict();
     Builder& end_dict();
-    
+
     ArrayContext start_array();
     Builder& end_array();
 
@@ -87,7 +88,7 @@ public:
     ArrayContext value(const Node::Value& value);
 };
 
-}//end namespace builder
-}//end namespace json
-}//end namespace detail
-}//end namespace transport_catalogue
+}  // end namespace builder
+}  // end namespace json
+}  // end namespace detail
+}  // end namespace transport_catalogue

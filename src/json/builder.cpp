@@ -7,24 +7,40 @@ namespace builder {
 
 BaseContext::BaseContext(Builder& builder) : builder_(builder) {}
 
-KeyContext BaseContext::key(const std::string& key) {return builder_.key(key);}
-Builder& BaseContext::value(const Node::Value& value) {return builder_.value(value);}
+KeyContext BaseContext::key(const std::string& key) {
+    return builder_.key(key);
+}
+Builder& BaseContext::value(const Node::Value& value) {
+    return builder_.value(value);
+}
 
-DictionaryContext BaseContext::start_dict() {return DictionaryContext(builder_.start_dict());}
-Builder& BaseContext::end_dict() {return builder_.end_dict();}
+DictionaryContext BaseContext::start_dict() {
+    return DictionaryContext(builder_.start_dict());
+}
+Builder& BaseContext::end_dict() {
+    return builder_.end_dict();
+}
 
-ArrayContext BaseContext::start_array() {return ArrayContext(builder_.start_array());}
-Builder& BaseContext::end_array() {return builder_.end_array();}
+ArrayContext BaseContext::start_array() {
+    return ArrayContext(builder_.start_array());
+}
+Builder& BaseContext::end_array() {
+    return builder_.end_array();
+}
 
 KeyContext::KeyContext(Builder& builder) : BaseContext(builder) {}
 
-DictionaryContext KeyContext::value(const Node::Value& value) {return BaseContext::value(std::move(value));}
+DictionaryContext KeyContext::value(const Node::Value& value) {
+    return BaseContext::value(std::move(value));
+}
 
 DictionaryContext::DictionaryContext(Builder& builder) : BaseContext(builder) {}
 
 ArrayContext::ArrayContext(Builder& builder) : BaseContext(builder) {}
 
-ArrayContext ArrayContext::value(const Node::Value& value) {return BaseContext::value(std::move(value));}
+ArrayContext ArrayContext::value(const Node::Value& value) {
+    return BaseContext::value(std::move(value));
+}
 
 Node Builder::make_node(const Node::Value& value_) {
     Node node;
@@ -62,7 +78,6 @@ Node Builder::make_node(const Node::Value& value_) {
 
 void Builder::add_node(const Node& node) {
     if (nodes_stack_.empty()) {
-
         if (!root_.is_null()) {
             throw std::logic_error("root has been added");
         }
@@ -71,10 +86,7 @@ void Builder::add_node(const Node& node) {
         return;
 
     } else {
-
-        if (!nodes_stack_.back()->is_array()
-            && !nodes_stack_.back()->is_string()) {
-
+        if (!nodes_stack_.back()->is_array() && !nodes_stack_.back()->is_string()) {
             throw std::logic_error("unable to create node");
         }
 
@@ -185,7 +197,7 @@ Node Builder::build() {
     return root_;
 }
 
-}//end namespace builder
-}//end namespace json
-}//end namespace detail
-}//end namespace transport_catalogue
+}  // end namespace builder
+}  // end namespace json
+}  // end namespace detail
+}  // end namespace transport_catalogue

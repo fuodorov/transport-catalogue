@@ -3,8 +3,8 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 namespace transport_catalogue {
 namespace detail {
@@ -22,7 +22,6 @@ public:
 
 class Node final : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
 public:
-    
     using variant::variant;
     using Value = variant;
 
@@ -34,7 +33,7 @@ public:
     Node(std::string value);
     Node(std::nullptr_t);
     Node(double value);
-    
+
     const Array& as_array() const;
     const Dict& as_dict() const;
     int as_int() const;
@@ -52,18 +51,18 @@ public:
     bool is_dict() const;
 
     const Value& get_value() const;
-        
+
 private:
     Value value_;
 };
 
-inline bool operator==(const Node& lhs, const Node& rhs) { 
+inline bool operator==(const Node& lhs, const Node& rhs) {
     return lhs.get_value() == rhs.get_value();
-}  
+}
 inline bool operator!=(const Node& lhs, const Node& rhs) {
     return !(lhs == rhs);
-} 
-    
+}
+
 class Document {
 public:
     Document() = default;
@@ -84,6 +83,6 @@ inline bool operator!=(const Document& lhs, const Document& rhs) {
 Document load(std::istream& input);
 void print(const Document& document, std::ostream& output);
 
-}//end namespace json
-}//end namespace detail
-}//end namespace transport_catalogue
+}  // end namespace json
+}  // end namespace detail
+}  // end namespace transport_catalogue
