@@ -14,7 +14,7 @@ const RoutingSettings &TransportRouter::get_routing_settings() const {
 void TransportRouter::build_router(TransportCatalogue &transport_catalogue) {
     set_graph(transport_catalogue);
     router_ = std::make_unique<Router<double>>(*graph_);
-    router_->build();
+    router_->Build();
 }
 
 const DirectedWeightedGraph<double> &TransportRouter::get_graph() const {
@@ -36,7 +36,7 @@ std::optional<RouterByStop> TransportRouter::get_router_by_stop(Stop *stop) cons
 }
 
 std::optional<RouteInfo> TransportRouter::get_route_info(VertexId start, graph::VertexId end) const {
-    const auto &route_info = router_->build_route(start, end);
+    const auto &route_info = router_->BuildRoute(start, end);
     if (route_info) {
         RouteInfo result;
         result.total_time = route_info->weight;
