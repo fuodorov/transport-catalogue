@@ -182,7 +182,7 @@ svg::Color color_deserialization(
 }
 
 transport_catalogue_protobuf::RenderSettings render_settings_serialization(
-    const map_renderer::RenderSettings &render_settings) {
+    const renderer::RenderSettings &render_settings) {
   transport_catalogue_protobuf::RenderSettings render_settings_proto;
 
   render_settings_proto.set_width_(render_settings.width_);
@@ -223,9 +223,9 @@ transport_catalogue_protobuf::RenderSettings render_settings_serialization(
   return render_settings_proto;
 }
 
-map_renderer::RenderSettings render_settings_deserialization(
+renderer::RenderSettings render_settings_deserialization(
     const transport_catalogue_protobuf::RenderSettings &render_settings_proto) {
-  map_renderer::RenderSettings render_settings;
+  renderer::RenderSettings render_settings;
 
   render_settings.width_ = render_settings_proto.width_();
   render_settings.height_ = render_settings_proto.height_();
@@ -283,7 +283,7 @@ domain::RoutingSettings routing_settings_deserialization(
 
 void catalogue_serialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue,
-    const map_renderer::RenderSettings &render_settings,
+    const renderer::RenderSettings &render_settings,
     const domain::RoutingSettings &routing_settings, std::ostream &out) {
   transport_catalogue_protobuf::Catalogue catalogue_proto;
 

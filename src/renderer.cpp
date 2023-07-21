@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-namespace map_renderer {
+namespace renderer {
 
 bool SphereProjector::is_zero(double value) {
   return std::abs(value) < EPSILON;
@@ -14,44 +14,44 @@ svg::Point SphereProjector::operator()(geo::Coordinates coords) const {
           (max_lat_ - coords.latitude) * zoom_coeff_ + padding_};
 }
 
-SphereProjector MapRenderer::get_sphere_projector(
+SphereProjector MapRenderer::GetSphereProjector(
     const std::vector<geo::Coordinates> &points) const {
   return SphereProjector(points.begin(), points.end(), render_settings_.width_,
                          render_settings_.height_, render_settings_.padding_);
 }
 
-void MapRenderer::init_sphere_projector(std::vector<geo::Coordinates> points) {
+void MapRenderer::InitSphereProjector(std::vector<geo::Coordinates> points) {
   sphere_projector =
       SphereProjector(points.begin(), points.end(), render_settings_.width_,
                       render_settings_.height_, render_settings_.padding_);
 }
 
-RenderSettings MapRenderer::get_render_settings() const {
+RenderSettings MapRenderer::GetRenderSettings() const {
   return render_settings_;
 }
 
-int MapRenderer::get_palette_size() const {
+int MapRenderer::GetPaletteSize() const {
   return render_settings_.color_palette_.size();
 }
 
-svg::Color MapRenderer::get_color(int line_number) const {
+svg::Color MapRenderer::GetColor(int line_number) const {
   return render_settings_.color_palette_[line_number];
 }
 
-void MapRenderer::set_line_properties(svg::Polyline &polyline,
-                                      [[maybe_unused]] int line_number) const {
+void MapRenderer::SetLineProperties(svg::Polyline &polyline,
+                                    [[maybe_unused]] int line_number) const {
   using namespace std::literals;
 
-  polyline.SetStrokeColor(get_color(line_number));
+  polyline.SetStrokeColor(GetColor(line_number));
   polyline.SetFillColor("none"s);
   polyline.SetStrokeWidth(render_settings_.line_width_);
   polyline.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
   polyline.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
 }
 
-void MapRenderer::set_route_text_common_properties(svg::Text &text,
-                                                   const std::string &name,
-                                                   svg::Point position) const {
+void MapRenderer::SetRouteTextCommonProperties(svg::Text &text,
+                                               const std::string &name,
+                                               svg::Point position) const {
   using namespace std::literals;
 
   text.SetPosition(position);
@@ -63,9 +63,10 @@ void MapRenderer::set_route_text_common_properties(svg::Text &text,
   text.SetData(name);
 }
 
-void MapRenderer::set_route_text_additional_properties(
-    svg::Text &text, const std::string &name, svg::Point position) const {
-  set_route_text_common_properties(text, name, position);
+void MapRenderer::SetRouteTextAdditionalProperties(svg::Text &text,
+                                                   const std::string &name,
+                                                   svg::Point position) const {
+  SetRouteTextCommonProperties(text, name, position);
 
   text.SetFillColor(render_settings_.underlayer_color_);
   text.SetStrokeColor(render_settings_.underlayer_color_);
@@ -74,17 +75,17 @@ void MapRenderer::set_route_text_additional_properties(
   text.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 }
 
-void MapRenderer::set_route_text_color_properties(svg::Text &text,
-                                                  const std::string &name,
-                                                  int palette,
-                                                  svg::Point position) const {
-  set_route_text_common_properties(text, name, position);
+void MapRenderer::SetRouteTextColorProperties(svg::Text &text,
+                                              const std::string &name,
+                                              int palette,
+                                              svg::Point position) const {
+  SetRouteTextCommonProperties(text, name, position);
 
-  text.SetFillColor(get_color(palette));
+  text.SetFillColor(GetColor(palette));
 }
 
-void MapRenderer::set_stops_circles_properties(svg::Circle &circle,
-                                               svg::Point position) const {
+void MapRenderer::SetStopsCirclesProperties(svg::Circle &circle,
+                                            svg::Point position) const {
   using namespace std::literals;
 
   circle.SetCenter(position);
@@ -92,9 +93,9 @@ void MapRenderer::set_stops_circles_properties(svg::Circle &circle,
   circle.SetFillColor("white");
 }
 
-void MapRenderer::set_stops_text_common_properties(svg::Text &text,
-                                                   const std::string &name,
-                                                   svg::Point position) const {
+void MapRenderer::SetStopsTextCommonProperties(svg::Text &text,
+                                               const std::string &name,
+                                               svg::Point position) const {
   using namespace std::literals;
 
   text.SetPosition(position);
@@ -105,10 +106,11 @@ void MapRenderer::set_stops_text_common_properties(svg::Text &text,
   text.SetData(name);
 }
 
-void MapRenderer::set_stops_text_additional_properties(
-    svg::Text &text, const std::string &name, svg::Point position) const {
+void MapRenderer::SetStopsTextAdditionalProperties(svg::Text &text,
+                                                   const std::string &name,
+                                                   svg::Point position) const {
   using namespace std::literals;
-  set_stops_text_common_properties(text, name, position);
+  SetStopsTextCommonProperties(text, name, position);
 
   text.SetFillColor(render_settings_.underlayer_color_);
   text.SetStrokeColor(render_settings_.underlayer_color_);
@@ -117,16 +119,16 @@ void MapRenderer::set_stops_text_additional_properties(
   text.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 }
 
-void MapRenderer::set_stops_text_color_properties(svg::Text &text,
-                                                  const std::string &name,
-                                                  svg::Point position) const {
+void MapRenderer::SetStopsTextColorProperties(svg::Text &text,
+                                              const std::string &name,
+                                              svg::Point position) const {
   using namespace std::literals;
 
-  set_stops_text_common_properties(text, name, position);
+  SetStopsTextCommonProperties(text, name, position);
   text.SetFillColor("black");
 }
 
-void MapRenderer::add_line(std::vector<std::pair<Bus *, int>> &buses_palette) {
+void MapRenderer::AddLine(std::vector<std::pair<Bus *, int>> &buses_palette) {
   std::vector<geo::Coordinates> stops_geo_coords;
 
   for (auto [bus, palette] : buses_palette) {
@@ -147,7 +149,7 @@ void MapRenderer::add_line(std::vector<std::pair<Bus *, int>> &buses_palette) {
     }
 
     if (!bus_empty) {
-      set_line_properties(bus_line, palette);
+      SetLineProperties(bus_line, palette);
       map_svg.Add(bus_line);
     }
 
@@ -155,7 +157,7 @@ void MapRenderer::add_line(std::vector<std::pair<Bus *, int>> &buses_palette) {
   }
 }
 
-void MapRenderer::AddBuses_name(
+void MapRenderer::AddBusesName(
     std::vector<std::pair<Bus *, int>> &buses_palette) {
   std::vector<geo::Coordinates> stops_geo_coords;
   bool bus_empty = true;
@@ -178,35 +180,35 @@ void MapRenderer::AddBuses_name(
 
     if (!bus_empty) {
       if (bus->is_round_trip) {
-        set_route_text_additional_properties(
-            route_name_roundtrip, std::string(bus->name),
-            sphere_projector(stops_geo_coords[0]));
+        SetRouteTextAdditionalProperties(route_name_roundtrip,
+                                         std::string(bus->name),
+                                         sphere_projector(stops_geo_coords[0]));
         map_svg.Add(route_name_roundtrip);
 
-        set_route_text_color_properties(route_title_roundtrip,
-                                        std::string(bus->name), palette,
-                                        sphere_projector(stops_geo_coords[0]));
+        SetRouteTextColorProperties(route_title_roundtrip,
+                                    std::string(bus->name), palette,
+                                    sphere_projector(stops_geo_coords[0]));
         map_svg.Add(route_title_roundtrip);
 
       } else {
-        set_route_text_additional_properties(
-            route_name_roundtrip, std::string(bus->name),
-            sphere_projector(stops_geo_coords[0]));
+        SetRouteTextAdditionalProperties(route_name_roundtrip,
+                                         std::string(bus->name),
+                                         sphere_projector(stops_geo_coords[0]));
         map_svg.Add(route_name_roundtrip);
 
-        set_route_text_color_properties(route_title_roundtrip,
-                                        std::string(bus->name), palette,
-                                        sphere_projector(stops_geo_coords[0]));
+        SetRouteTextColorProperties(route_title_roundtrip,
+                                    std::string(bus->name), palette,
+                                    sphere_projector(stops_geo_coords[0]));
         map_svg.Add(route_title_roundtrip);
 
         if (stops_geo_coords[0] !=
             stops_geo_coords[stops_geo_coords.size() / 2]) {
-          set_route_text_additional_properties(
+          SetRouteTextAdditionalProperties(
               route_name_notroundtrip, std::string(bus->name),
               sphere_projector(stops_geo_coords[stops_geo_coords.size() / 2]));
           map_svg.Add(route_name_notroundtrip);
 
-          set_route_text_color_properties(
+          SetRouteTextColorProperties(
               route_title_notroundtrip, std::string(bus->name), palette,
               sphere_projector(stops_geo_coords[stops_geo_coords.size() / 2]));
           map_svg.Add(route_title_notroundtrip);
@@ -219,7 +221,7 @@ void MapRenderer::AddBuses_name(
   }
 }
 
-void MapRenderer::add_stops_circle(std::vector<Stop *> &stops) {
+void MapRenderer::AddStopsCircle(std::vector<Stop *> &stops) {
   std::vector<geo::Coordinates> stops_geo_coords;
   svg::Circle icon;
 
@@ -229,13 +231,13 @@ void MapRenderer::add_stops_circle(std::vector<Stop *> &stops) {
       coordinates.latitude = stop_info->latitude;
       coordinates.longitude = stop_info->longitude;
 
-      set_stops_circles_properties(icon, sphere_projector(coordinates));
+      SetStopsCirclesProperties(icon, sphere_projector(coordinates));
       map_svg.Add(icon);
     }
   }
 }
 
-void MapRenderer::add_stops_name(std::vector<Stop *> &stops) {
+void MapRenderer::AddStopsName(std::vector<Stop *> &stops) {
   std::vector<geo::Coordinates> stops_geo_coords;
 
   svg::Text svg_stop_name;
@@ -247,19 +249,19 @@ void MapRenderer::add_stops_name(std::vector<Stop *> &stops) {
       coordinates.latitude = stop_info->latitude;
       coordinates.longitude = stop_info->longitude;
 
-      set_stops_text_additional_properties(svg_stop_name, stop_info->name,
-                                           sphere_projector(coordinates));
+      SetStopsTextAdditionalProperties(svg_stop_name, stop_info->name,
+                                       sphere_projector(coordinates));
       map_svg.Add(svg_stop_name);
 
-      set_stops_text_color_properties(svg_stop_name_title, stop_info->name,
-                                      sphere_projector(coordinates));
+      SetStopsTextColorProperties(svg_stop_name_title, stop_info->name,
+                                  sphere_projector(coordinates));
       map_svg.Add(svg_stop_name_title);
     }
   }
 }
 
-void MapRenderer::get_stream_map(std::ostream &stream_) {
+void MapRenderer::GetStreamMap(std::ostream &stream_) {
   map_svg.Render(stream_);
 }
 
-}  // end namespace map_renderer
+}  // end namespace renderer

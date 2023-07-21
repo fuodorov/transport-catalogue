@@ -13,19 +13,20 @@ class Parser {
   Parser(Document doc);
   Parser(std::istream &input);
 
-  void ProcessNodeTransportCatalogue(const Node &root, TransportCatalogue &catalogue);
+  void ProcessNodeTransportCatalogue(const Node &root,
+                                     TransportCatalogue &catalogue);
   void ProcessNodeStatisticRequest(const Node &root,
-                       std::vector<StatisticRequest> &stat_request);
+                                   std::vector<StatisticRequest> &stat_request);
   void ProcessNodeRenderSettings(const Node &node,
-                         map_renderer::RenderSettings &render_settings);
-  void ProcessNodeRoutingSettings(const Node &node, router::RoutingSettings &route_set);
+                                 renderer::RenderSettings &render_settings);
+  void ProcessNodeRoutingSettings(const Node &node,
+                                  router::RoutingSettings &route_set);
   void ProcessNodeSerializationSettings(
       const Node &node,
       serialization::SerializationSettings &serialization_set);
 
   void ProcessTransportCatalogue(
-      TransportCatalogue &catalogue,
-      map_renderer::RenderSettings &render_settings,
+      TransportCatalogue &catalogue, renderer::RenderSettings &render_settings,
       router::RoutingSettings &routing_settings,
       serialization::SerializationSettings &serialization_settings);
 

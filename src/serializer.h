@@ -18,7 +18,7 @@ struct SerializationSettings {
 
 struct Catalogue {
   transport_catalogue::TransportCatalogue transport_catalogue_;
-  map_renderer::RenderSettings render_settings_;
+  renderer::RenderSettings render_settings_;
   domain::RoutingSettings routing_settings_;
 };
 
@@ -37,8 +37,8 @@ transport_catalogue_protobuf::Color color_serialization(
 svg::Color color_deserialization(
     const transport_catalogue_protobuf::Color &color_proto);
 transport_catalogue_protobuf::RenderSettings render_settings_serialization(
-    const map_renderer::RenderSettings &render_settings);
-map_renderer::RenderSettings render_settings_deserialization(
+    const renderer::RenderSettings &render_settings);
+renderer::RenderSettings render_settings_deserialization(
     const transport_catalogue_protobuf::RenderSettings &render_settings_proto);
 
 transport_catalogue_protobuf::RoutingSettings routing_settings_serialization(
@@ -49,7 +49,7 @@ domain::RoutingSettings routing_settings_deserialization(
 
 void catalogue_serialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue,
-    const map_renderer::RenderSettings &render_settings,
+    const renderer::RenderSettings &render_settings,
     const domain::RoutingSettings &routing_settings, std::ostream &out);
 
 Catalogue catalogue_deserialization(std::istream &in);

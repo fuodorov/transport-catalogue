@@ -10,7 +10,7 @@ using namespace transport_catalogue;
 using namespace transport_catalogue::json;
 using namespace transport_catalogue::router;
 
-using namespace map_renderer;
+using namespace renderer;
 using namespace handler;
 using namespace serialization;
 
@@ -40,7 +40,8 @@ int main(int argc, char *argv[]) {
     json_reader = Parser(cin);
 
     json_reader.ProcessTransportCatalogue(transport_catalogue, render_settings,
-                                     routing_settings, serialization_settings);
+                                          routing_settings,
+                                          serialization_settings);
 
     ofstream out_file(serialization_settings.file_name, ios::binary);
     catalogue_serialization(transport_catalogue, render_settings,
@@ -49,8 +50,7 @@ int main(int argc, char *argv[]) {
   } else if (mode == "process_requests"sv) {
     json_reader = Parser(cin);
 
-    json_reader.ProcessRequests(stat_request,
-                                            serialization_settings);
+    json_reader.ProcessRequests(stat_request, serialization_settings);
 
     ifstream in_file(serialization_settings.file_name, ios::binary);
 

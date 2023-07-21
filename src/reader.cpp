@@ -85,7 +85,7 @@ Bus Parser::ProcessNodeBus(Node &node, TransportCatalogue &catalogue) {
 }
 
 void Parser::ProcessNodeTransportCatalogue(const Node &root,
-                                 TransportCatalogue &catalogue) {
+                                           TransportCatalogue &catalogue) {
   Array base_requests;
   Dict req_map;
   Node req_node;
@@ -136,8 +136,8 @@ void Parser::ProcessNodeTransportCatalogue(const Node &root,
   }
 }
 
-void Parser::ProcessNodeStatisticRequest(const Node &node,
-                                 std::vector<StatisticRequest> &stat_request) {
+void Parser::ProcessNodeStatisticRequest(
+    const Node &node, std::vector<StatisticRequest> &stat_request) {
   Array stat_requests;
   Dict req_map;
   StatisticRequest req;
@@ -178,7 +178,7 @@ void Parser::ProcessNodeStatisticRequest(const Node &node,
 }
 
 void Parser::ProcessNodeRenderSettings(const Node &node,
-                                   map_renderer::RenderSettings &rend_set) {
+                                       renderer::RenderSettings &rend_set) {
   Dict rend_map;
   Array bus_lab_offset;
   Array stop_lab_offset;
@@ -272,7 +272,7 @@ void Parser::ProcessNodeRenderSettings(const Node &node,
 }
 
 void Parser::ProcessNodeRoutingSettings(const Node &node,
-                                    router::RoutingSettings &route_set) {
+                                        router::RoutingSettings &route_set) {
   Dict route;
 
   if (node.IsDict()) {
@@ -311,8 +311,7 @@ void Parser::ProcessNodeSerializationSettings(
 }
 
 void Parser::ProcessTransportCatalogue(
-    TransportCatalogue &catalogue,
-    map_renderer::RenderSettings &render_settings,
+    TransportCatalogue &catalogue, renderer::RenderSettings &render_settings,
     router::RoutingSettings &routing_settings,
     serialization::SerializationSettings &serialization_settings) {
   Dict root_dictionary;
@@ -321,27 +320,29 @@ void Parser::ProcessTransportCatalogue(
     root_dictionary = document.GetRoot().AsDict();
 
     try {
-      ProcessNodeTransportCatalogue(root_dictionary.at("base_requests"), catalogue);
+      ProcessNodeTransportCatalogue(root_dictionary.at("base_requests"),
+                                    catalogue);
 
     } catch (...) {
     }
 
     try {
-      ProcessNodeRenderSettings(root_dictionary.at("render_settings"), render_settings);
+      ProcessNodeRenderSettings(root_dictionary.at("render_settings"),
+                                render_settings);
 
     } catch (...) {
     }
 
     try {
       ProcessNodeRoutingSettings(root_dictionary.at("routing_settings"),
-                         routing_settings);
+                                 routing_settings);
 
     } catch (...) {
     }
 
     try {
-      ProcessNodeSerializationSettings(root_dictionary.at("serialization_settings"),
-                               serialization_settings);
+      ProcessNodeSerializationSettings(
+          root_dictionary.at("serialization_settings"), serialization_settings);
 
     } catch (...) {
     }
@@ -360,14 +361,15 @@ void Parser::ProcessRequests(
     root_dictionary = document.GetRoot().AsDict();
 
     try {
-      ProcessNodeStatisticRequest(root_dictionary.at("stat_requests"), stat_request);
+      ProcessNodeStatisticRequest(root_dictionary.at("stat_requests"),
+                                  stat_request);
 
     } catch (...) {
     }
 
     try {
-      ProcessNodeSerializationSettings(root_dictionary.at("serialization_settings"),
-                               serialization_settings);
+      ProcessNodeSerializationSettings(
+          root_dictionary.at("serialization_settings"), serialization_settings);
 
     } catch (...) {
     }

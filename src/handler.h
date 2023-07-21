@@ -6,7 +6,7 @@
 #include "router.h"
 
 using namespace transport_catalogue;
-using namespace map_renderer;
+using namespace renderer;
 using namespace transport_catalogue::json;
 using namespace transport_catalogue::json::builder;
 using namespace transport_catalogue::router;

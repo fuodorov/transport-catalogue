@@ -114,10 +114,10 @@ Node Handler::MakeMapNode(int id_request, TransportCatalogue &catalogue_,
 
   MapRenderer map_catalogue(render_settings);
 
-  map_catalogue.init_sphere_projector(GetStopsCoordinates(catalogue_));
+  map_catalogue.InitSphereProjector(GetStopsCoordinates(catalogue_));
 
   RenderMap(map_catalogue, catalogue_);
-  map_catalogue.get_stream_map(map_stream);
+  map_catalogue.GetStreamMap(map_stream);
   map_str = map_stream.str();
 
   result = Builder{}
@@ -203,7 +203,7 @@ void Handler::RenderMap(MapRenderer &map_catalogue,
   int palette_size = 0;
   int palette_index = 0;
 
-  palette_size = map_catalogue.get_palette_size();
+  palette_size = map_catalogue.GetPaletteSize();
 
   if (palette_size == 0) {
     std::cout << "color palette is empty";
@@ -228,8 +228,8 @@ void Handler::RenderMap(MapRenderer &map_catalogue,
     }
 
     if (buses_palette.size() > 0) {
-      map_catalogue.add_line(buses_palette);
-      map_catalogue.AddBuses_name(buses_palette);
+      map_catalogue.AddLine(buses_palette);
+      map_catalogue.AddBusesName(buses_palette);
     }
   }
 
@@ -253,8 +253,8 @@ void Handler::RenderMap(MapRenderer &map_catalogue,
     }
 
     if (stops_sort.size() > 0) {
-      map_catalogue.add_stops_circle(stops_sort);
-      map_catalogue.add_stops_name(stops_sort);
+      map_catalogue.AddStopsCircle(stops_sort);
+      map_catalogue.AddStopsName(stops_sort);
     }
   }
 }
