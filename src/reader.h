@@ -5,45 +5,43 @@
 #include "router.h"
 #include "serializer.h"
 
-namespace transport_catalogue {
-namespace json {
+namespace transport_catalogue::json {
 
-class JSONReader {
+class Parser {
  public:
-  JSONReader() = default;
-  JSONReader(Document doc);
-  JSONReader(std::istream &input);
+  Parser() = default;
+  Parser(Document doc);
+  Parser(std::istream &input);
 
-  void parse_node_base(const Node &root, TransportCatalogue &catalogue);
-  void parse_node_stat(const Node &root,
+  void ProcessNodeTransportCatalogue(const Node &root, TransportCatalogue &catalogue);
+  void ProcessNodeStatisticRequest(const Node &root,
                        std::vector<StatisticRequest> &stat_request);
-  void parse_node_render(const Node &node,
+  void ProcessNodeRenderSettings(const Node &node,
                          map_renderer::RenderSettings &render_settings);
-  void parse_node_routing(const Node &node, router::RoutingSettings &route_set);
-  void parse_node_serialization(
+  void ProcessNodeRoutingSettings(const Node &node, router::RoutingSettings &route_set);
+  void ProcessNodeSerializationSettings(
       const Node &node,
       serialization::SerializationSettings &serialization_set);
 
-  void parse_node_make_base(
+  void ProcessTransportCatalogue(
       TransportCatalogue &catalogue,
       map_renderer::RenderSettings &render_settings,
       router::RoutingSettings &routing_settings,
       serialization::SerializationSettings &serialization_settings);
 
-  void parse_node_process_requests(
+  void ProcessRequests(
       std::vector<StatisticRequest> &stat_request,
       serialization::SerializationSettings &serialization_settings);
 
-  Stop parse_node_stop(Node &node);
-  Bus parse_node_bus(Node &node, TransportCatalogue &catalogue);
-  std::vector<Distance> parse_node_distances(Node &node,
+  Stop ProcessNodeStop(Node &node);
+  Bus ProcessNodeBus(Node &node, TransportCatalogue &catalogue);
+  std::vector<Distance> ProcessNodeDistances(Node &node,
                                              TransportCatalogue &catalogue);
 
   const Document &GetDocument() const;
 
  private:
-  Document document_;
+  Document document;
 };
 
-}  // end namespace json
-}  // end namespace transport_catalogue
+}  // namespace transport_catalogue::json

@@ -3,10 +3,10 @@
 namespace transport_catalogue {
 namespace json {
 
-JSONReader::JSONReader(Document doc) : document_(std::move(doc)) {}
-JSONReader::JSONReader(std::istream &input) : document_(json::Load(input)) {}
+Parser::Parser(Document doc) : document(std::move(doc)) {}
+Parser::Parser(std::istream &input) : document(json::Load(input)) {}
 
-Stop JSONReader::parse_node_stop(Node &node) {
+Stop Parser::ProcessNodeStop(Node &node) {
   Stop stop;
   Dict stop_node;
 
@@ -20,7 +20,7 @@ Stop JSONReader::parse_node_stop(Node &node) {
   return stop;
 }
 
-std::vector<Distance> JSONReader::parse_node_distances(
+std::vector<Distance> Parser::ProcessNodeDistances(
     Node &node, TransportCatalogue &catalogue) {
   std::vector<Distance> distances;
   Dict stop_node;
@@ -51,7 +51,7 @@ std::vector<Distance> JSONReader::parse_node_distances(
   return distances;
 }
 
-Bus JSONReader::parse_node_bus(Node &node, TransportCatalogue &catalogue) {
+Bus Parser::ProcessNodeBus(Node &node, TransportCatalogue &catalogue) {
   Bus bus;
   Dict bus_node;
   Array bus_stops;
@@ -84,7 +84,7 @@ Bus JSONReader::parse_node_bus(Node &node, TransportCatalogue &catalogue) {
   return bus;
 }
 
-void JSONReader::parse_node_base(const Node &root,
+void Parser::ProcessNodeTransportCatalogue(const Node &root,
                                  TransportCatalogue &catalogue) {
   Array base_requests;
   Dict req_map;
@@ -120,15 +120,15 @@ void JSONReader::parse_node_base(const Node &root,
     }
 
     for (auto stop : stops) {
-      catalogue.AddStop(parse_node_stop(stop));
+      catalogue.AddStop(ProcessNodeStop(stop));
     }
 
     for (auto stop : stops) {
-      catalogue.AddDistance(parse_node_distances(stop, catalogue));
+      catalogue.AddDistance(ProcessNodeDistances(stop, catalogue));
     }
 
     for (auto bus : buses) {
-      catalogue.AddBus(parse_node_bus(bus, catalogue));
+      catalogue.AddBus(ProcessNodeBus(bus, catalogue));
     }
 
   } else {
@@ -136,7 +136,7 @@ void JSONReader::parse_node_base(const Node &root,
   }
 }
 
-void JSONReader::parse_node_stat(const Node &node,
+void Parser::ProcessNodeStatisticRequest(const Node &node,
                                  std::vector<StatisticRequest> &stat_request) {
   Array stat_requests;
   Dict req_map;
@@ -177,7 +177,7 @@ void JSONReader::parse_node_stat(const Node &node,
   }
 }
 
-void JSONReader::parse_node_render(const Node &node,
+void Parser::ProcessNodeRenderSettings(const Node &node,
                                    map_renderer::RenderSettings &rend_set) {
   Dict rend_map;
   Array bus_lab_offset;
@@ -271,7 +271,7 @@ void JSONReader::parse_node_render(const Node &node,
   }
 }
 
-void JSONReader::parse_node_routing(const Node &node,
+void Parser::ProcessNodeRoutingSettings(const Node &node,
                                     router::RoutingSettings &route_set) {
   Dict route;
 
@@ -291,7 +291,7 @@ void JSONReader::parse_node_routing(const Node &node,
   }
 }
 
-void JSONReader::parse_node_serialization(
+void Parser::ProcessNodeSerializationSettings(
     const Node &node, serialization::SerializationSettings &serialization_set) {
   Dict serialization;
 
@@ -310,37 +310,37 @@ void JSONReader::parse_node_serialization(
   }
 }
 
-void JSONReader::parse_node_make_base(
+void Parser::ProcessTransportCatalogue(
     TransportCatalogue &catalogue,
     map_renderer::RenderSettings &render_settings,
     router::RoutingSettings &routing_settings,
     serialization::SerializationSettings &serialization_settings) {
   Dict root_dictionary;
 
-  if (document_.GetRoot().IsDict()) {
-    root_dictionary = document_.GetRoot().AsDict();
+  if (document.GetRoot().IsDict()) {
+    root_dictionary = document.GetRoot().AsDict();
 
     try {
-      parse_node_base(root_dictionary.at("base_requests"), catalogue);
+      ProcessNodeTransportCatalogue(root_dictionary.at("base_requests"), catalogue);
 
     } catch (...) {
     }
 
     try {
-      parse_node_render(root_dictionary.at("render_settings"), render_settings);
+      ProcessNodeRenderSettings(root_dictionary.at("render_settings"), render_settings);
 
     } catch (...) {
     }
 
     try {
-      parse_node_routing(root_dictionary.at("routing_settings"),
+      ProcessNodeRoutingSettings(root_dictionary.at("routing_settings"),
                          routing_settings);
 
     } catch (...) {
     }
 
     try {
-      parse_node_serialization(root_dictionary.at("serialization_settings"),
+      ProcessNodeSerializationSettings(root_dictionary.at("serialization_settings"),
                                serialization_settings);
 
     } catch (...) {
@@ -351,22 +351,22 @@ void JSONReader::parse_node_make_base(
   }
 }
 
-void JSONReader::parse_node_process_requests(
+void Parser::ProcessRequests(
     std::vector<StatisticRequest> &stat_request,
     serialization::SerializationSettings &serialization_settings) {
   Dict root_dictionary;
 
-  if (document_.GetRoot().IsDict()) {
-    root_dictionary = document_.GetRoot().AsDict();
+  if (document.GetRoot().IsDict()) {
+    root_dictionary = document.GetRoot().AsDict();
 
     try {
-      parse_node_stat(root_dictionary.at("stat_requests"), stat_request);
+      ProcessNodeStatisticRequest(root_dictionary.at("stat_requests"), stat_request);
 
     } catch (...) {
     }
 
     try {
-      parse_node_serialization(root_dictionary.at("serialization_settings"),
+      ProcessNodeSerializationSettings(root_dictionary.at("serialization_settings"),
                                serialization_settings);
 
     } catch (...) {

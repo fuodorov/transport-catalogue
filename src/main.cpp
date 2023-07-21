@@ -33,13 +33,13 @@ int main(int argc, char *argv[]) {
 
   SerializationSettings serialization_settings;
 
-  JSONReader json_reader;
+  Parser json_reader;
   vector<StatisticRequest> stat_request;
 
   if (mode == "make_base"sv) {
-    json_reader = JSONReader(cin);
+    json_reader = Parser(cin);
 
-    json_reader.parse_node_make_base(transport_catalogue, render_settings,
+    json_reader.ProcessTransportCatalogue(transport_catalogue, render_settings,
                                      routing_settings, serialization_settings);
 
     ofstream out_file(serialization_settings.file_name, ios::binary);
@@ -47,9 +47,9 @@ int main(int argc, char *argv[]) {
                             routing_settings, out_file);
 
   } else if (mode == "process_requests"sv) {
-    json_reader = JSONReader(cin);
+    json_reader = Parser(cin);
 
-    json_reader.parse_node_process_requests(stat_request,
+    json_reader.ProcessRequests(stat_request,
                                             serialization_settings);
 
     ifstream in_file(serialization_settings.file_name, ios::binary);
