@@ -25,9 +25,8 @@ RUN apt-get update && \
     cmake \ 
     protobuf-compiler
 
-RUN groupadd -r sample && useradd -r -g sample sample
-USER sample
-
 COPY --from=build \
     ./transport_catalogue/build/transport_catalogue \
     ./app/
+
+WORKDIR /app
