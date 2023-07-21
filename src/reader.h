@@ -39,7 +39,7 @@ class JSONReader {
   std::vector<Distance> parse_node_distances(Node &node,
                                              TransportCatalogue &catalogue);
 
-  const Document &get_document() const;
+  const Document &GetDocument() const;
 
  private:
   Document document_;

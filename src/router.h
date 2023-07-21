@@ -30,7 +30,7 @@ class TransportRouter {
   const std::variant<StopEdge, BusEdge> &GetEdge(EdgeId id) const;
 
   std::optional<RouterStop> get_router_by_stop(Stop *stop) const;
-  std::optional<RouteInfo> get_route_info(VertexId start, VertexId end) const;
+  std::optional<RouteInfo> GetRouteInfo(VertexId start, VertexId end) const;
 
   const std::unordered_map<Stop *, RouterStop> &get_stop_to_vertex() const;
   const std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>>

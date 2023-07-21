@@ -11,7 +11,7 @@ using namespace transport_catalogue::json;
 using namespace transport_catalogue::router;
 
 using namespace map_renderer;
-using namespace request_handler;
+using namespace handler;
 using namespace serialization;
 
 void PrintUsage(std::ostream &stream = std::cerr) {
@@ -56,13 +56,12 @@ int main(int argc, char *argv[]) {
 
     Catalogue catalogue = catalogue_deserialization(in_file);
 
-    RequestHandler request_handler;
+    Handler handler;
 
-    request_handler.execute_queries(catalogue.transport_catalogue_,
-                                    stat_request, catalogue.render_settings_,
-                                    catalogue.routing_settings_);
+    handler.Queries(catalogue.transport_catalogue_, stat_request,
+                    catalogue.render_settings_, catalogue.routing_settings_);
 
-    Print(request_handler.get_document(), cout);
+    Print(handler.GetDocument(), cout);
 
   } else {
     PrintUsage();

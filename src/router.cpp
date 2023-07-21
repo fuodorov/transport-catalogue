@@ -35,7 +35,7 @@ std::optional<RouterStop> TransportRouter::get_router_by_stop(
   }
 }
 
-std::optional<RouteInfo> TransportRouter::get_route_info(
+std::optional<RouteInfo> TransportRouter::GetRouteInfo(
     VertexId start, graph::VertexId end) const {
   const auto &route_info = router_->BuildRoute(start, end);
   if (route_info) {

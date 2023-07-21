@@ -1,6 +1,6 @@
 #include "handler.h"
 
-namespace request_handler {
+namespace handler {
 
 struct EdgeInfoGetter {
   Node operator()(const StopEdge &edge_info) {
@@ -36,8 +36,7 @@ struct EdgeInfoGetter {
   }
 };
 
-Node RequestHandler::execute_MakeNode_stop(int id_request,
-                                           const StopInfo &stop_info) {
+Node Handler::MakeStopNode(int id_request, const StopInfo &stop_info) {
   Node result;
   Array buses;
   Builder builder;
@@ -73,8 +72,7 @@ Node RequestHandler::execute_MakeNode_stop(int id_request,
   return result;
 }
 
-Node RequestHandler::execute_MakeNode_bus(int id_request,
-                                          const BusInfo &bus_info) {
+Node Handler::MakeBusNode(int id_request, const BusInfo &bus_info) {
   Node result;
   std::string str_not_found = "not found";
 
@@ -107,9 +105,8 @@ Node RequestHandler::execute_MakeNode_bus(int id_request,
   return result;
 }
 
-Node RequestHandler::execute_MakeNode_map(int id_request,
-                                          TransportCatalogue &catalogue_,
-                                          RenderSettings render_settings) {
+Node Handler::MakeMapNode(int id_request, TransportCatalogue &catalogue_,
+                          RenderSettings render_settings) {
   Node result;
 
   std::ostringstream map_stream;
@@ -117,9 +114,9 @@ Node RequestHandler::execute_MakeNode_map(int id_request,
 
   MapRenderer map_catalogue(render_settings);
 
-  map_catalogue.init_sphere_projector(get_stops_coordinates(catalogue_));
+  map_catalogue.init_sphere_projector(GetStopsCoordinates(catalogue_));
 
-  execute_render_map(map_catalogue, catalogue_);
+  RenderMap(map_catalogue, catalogue_);
   map_catalogue.get_stream_map(map_stream);
   map_str = map_stream.str();
 
@@ -135,11 +132,11 @@ Node RequestHandler::execute_MakeNode_map(int id_request,
   return result;
 }
 
-Node RequestHandler::execute_MakeNode_route(StatisticRequest &request,
-                                            TransportCatalogue &catalogue,
-                                            TransportRouter &routing) {
+Node Handler::MakeRouteNode(StatisticRequest &request,
+                            TransportCatalogue &catalogue,
+                            TransportRouter &routing) {
   const auto &route_info =
-      get_route_info(request.from, request.to, catalogue, routing);
+      GetRouteInfo(request.from, request.to, catalogue, routing);
 
   if (!route_info) {
     return Builder{}
@@ -169,10 +166,10 @@ Node RequestHandler::execute_MakeNode_route(StatisticRequest &request,
       .Build();
 }
 
-void RequestHandler::execute_queries(TransportCatalogue &catalogue,
-                                     std::vector<StatisticRequest> &stat_requests,
-                                     RenderSettings &render_settings,
-                                     RoutingSettings &routing_settings) {
+void Handler::Queries(TransportCatalogue &catalogue,
+                      std::vector<StatisticRequest> &stat_requests,
+                      RenderSettings &render_settings,
+                      RoutingSettings &routing_settings) {
   std::vector<Node> result_request;
   TransportRouter transport_router;
 
@@ -182,27 +179,25 @@ void RequestHandler::execute_queries(TransportCatalogue &catalogue,
   for (StatisticRequest req : stat_requests) {
     if (req.type == "Stop") {
       result_request.push_back(
-          execute_MakeNode_stop(req.id, stop_query(catalogue, req.name)));
+          MakeStopNode(req.id, StopQuery(catalogue, req.name)));
 
     } else if (req.type == "Bus") {
       result_request.push_back(
-          execute_MakeNode_bus(req.id, bus_query(catalogue, req.name)));
+          MakeBusNode(req.id, BusQuery(catalogue, req.name)));
 
     } else if (req.type == "Map") {
-      result_request.push_back(
-          execute_MakeNode_map(req.id, catalogue, render_settings));
+      result_request.push_back(MakeMapNode(req.id, catalogue, render_settings));
 
     } else if (req.type == "Route") {
-      result_request.push_back(
-          execute_MakeNode_route(req, catalogue, transport_router));
+      result_request.push_back(MakeRouteNode(req, catalogue, transport_router));
     }
   }
 
-  doc_out = Document{Node(result_request)};
+  document = Document{Node(result_request)};
 }
 
-void RequestHandler::execute_render_map(MapRenderer &map_catalogue,
-                                        TransportCatalogue &catalogue) const {
+void Handler::RenderMap(MapRenderer &map_catalogue,
+                        TransportCatalogue &catalogue) const {
   std::vector<std::pair<Bus *, int>> buses_palette;
   std::vector<Stop *> stops_sort;
   int palette_size = 0;
@@ -217,7 +212,7 @@ void RequestHandler::execute_render_map(MapRenderer &map_catalogue,
 
   auto buses = catalogue.GetBusNames();
   if (buses.size() > 0) {
-    for (std::string_view bus_name : get_sort_buses_names(catalogue)) {
+    for (std::string_view bus_name : GetBusNames(catalogue)) {
       Bus *bus_info = catalogue.GetBus(bus_name);
 
       if (bus_info) {
@@ -264,15 +259,16 @@ void RequestHandler::execute_render_map(MapRenderer &map_catalogue,
   }
 }
 
-std::optional<RouteInfo> RequestHandler::get_route_info(
-    std::string_view start, std::string_view end, TransportCatalogue &catalogue,
-    TransportRouter &routing) const {
-  return routing.get_route_info(
+std::optional<RouteInfo> Handler::GetRouteInfo(std::string_view start,
+                                               std::string_view end,
+                                               TransportCatalogue &catalogue,
+                                               TransportRouter &routing) const {
+  return routing.GetRouteInfo(
       routing.get_router_by_stop(catalogue.GetStop(start))->bus_wait_start,
       routing.get_router_by_stop(catalogue.GetStop(end))->bus_wait_start);
 }
 
-std::vector<geo::Coordinates> RequestHandler::get_stops_coordinates(
+std::vector<geo::Coordinates> Handler::GetStopsCoordinates(
     TransportCatalogue &catalogue_) const {
   std::vector<geo::Coordinates> stops_coordinates;
   auto buses = catalogue_.GetBusNames();
@@ -289,7 +285,7 @@ std::vector<geo::Coordinates> RequestHandler::get_stops_coordinates(
   return stops_coordinates;
 }
 
-std::vector<std::string_view> RequestHandler::get_sort_buses_names(
+std::vector<std::string_view> Handler::GetBusNames(
     TransportCatalogue &catalogue_) const {
   std::vector<std::string_view> buses_names;
 
@@ -308,8 +304,8 @@ std::vector<std::string_view> RequestHandler::get_sort_buses_names(
   }
 }
 
-BusInfo RequestHandler::bus_query(TransportCatalogue &catalogue,
-                                         std::string_view bus_name) {
+BusInfo Handler::BusQuery(TransportCatalogue &catalogue,
+                          std::string_view bus_name) {
   BusInfo bus_info;
   Bus *bus = catalogue.GetBus(bus_name);
 
@@ -330,8 +326,8 @@ BusInfo RequestHandler::bus_query(TransportCatalogue &catalogue,
   return bus_info;
 }
 
-StopInfo RequestHandler::stop_query(TransportCatalogue &catalogue,
-                                           std::string_view stop_name) {
+StopInfo Handler::StopQuery(TransportCatalogue &catalogue,
+                            std::string_view stop_name) {
   std::unordered_set<const Bus *> unique_buses;
   StopInfo stop_info;
   Stop *stop = catalogue.GetStop(stop_name);
@@ -357,6 +353,6 @@ StopInfo RequestHandler::stop_query(TransportCatalogue &catalogue,
   return stop_info;
 }
 
-const Document &RequestHandler::get_document() { return doc_out; }
+const Document &Handler::GetDocument() { return document; }
 
-}  // end namespace request_handler
+}  // end namespace handler
