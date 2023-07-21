@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
                                           serialization_settings);
 
     ofstream out_file(serialization_settings.file_name, ios::binary);
-    catalogue_serialization(transport_catalogue, render_settings,
+    CatalogueSerialization(transport_catalogue, render_settings,
                             routing_settings, out_file);
 
   } else if (mode == "process_requests"sv) {
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 
     ifstream in_file(serialization_settings.file_name, ios::binary);
 
-    Catalogue catalogue = catalogue_deserialization(in_file);
+    Catalogue catalogue = CatalogueDeserialization(in_file);
 
     Handler handler;
 

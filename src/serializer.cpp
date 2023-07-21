@@ -3,7 +3,7 @@
 namespace serialization {
 
 template <typename It>
-uint32_t calculate_id(It start, It end, std::string_view name) {
+uint32_t CalcId(It start, It end, std::string_view name) {
   auto stop_it = std::find_if(start, end, [&name](const domain::Stop stop) {
     return stop.name == name;
   });
@@ -11,7 +11,7 @@ uint32_t calculate_id(It start, It end, std::string_view name) {
 }
 
 transport_catalogue_protobuf::TransportCatalogue
-transport_catalogue_serialization(
+TransportCatalogueSerialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue) {
   transport_catalogue_protobuf::TransportCatalogue transport_catalogue_proto;
 
@@ -39,7 +39,7 @@ transport_catalogue_serialization(
     bus_proto.set_name(bus.name);
 
     for (auto stop : bus.stops) {
-      uint32_t stop_id = calculate_id(stops.cbegin(), stops.cend(), stop->name);
+      uint32_t stop_id = CalcId(stops.cbegin(), stops.cend(), stop->name);
       bus_proto.add_stops(stop_id);
     }
 
@@ -53,10 +53,10 @@ transport_catalogue_serialization(
     transport_catalogue_protobuf::Distance distance_proto;
 
     distance_proto.set_start(
-        calculate_id(stops.cbegin(), stops.cend(), stops_pair.first->name));
+        CalcId(stops.cbegin(), stops.cend(), stops_pair.first->name));
 
     distance_proto.set_end(
-        calculate_id(stops.cbegin(), stops.cend(), stops_pair.second->name));
+        CalcId(stops.cbegin(), stops.cend(), stops_pair.second->name));
 
     distance_proto.set_distance(pair_distance);
 
@@ -66,7 +66,7 @@ transport_catalogue_serialization(
   return transport_catalogue_proto;
 }
 
-transport_catalogue::TransportCatalogue transport_catalogue_deserialization(
+transport_catalogue::TransportCatalogue TransportCatalogueDeserialization(
     const transport_catalogue_protobuf::TransportCatalogue
         &transport_catalogue_proto) {
   transport_catalogue::TransportCatalogue transport_catalogue;
@@ -122,7 +122,7 @@ transport_catalogue::TransportCatalogue transport_catalogue_deserialization(
   return transport_catalogue;
 }
 
-transport_catalogue_protobuf::Color color_serialization(
+transport_catalogue_protobuf::Color ColorSerialization(
     const svg::Color &tc_color) {
   transport_catalogue_protobuf::Color color_proto;
 
@@ -151,7 +151,7 @@ transport_catalogue_protobuf::Color color_serialization(
   return color_proto;
 }
 
-svg::Color color_deserialization(
+svg::Color ColorDeserialization(
     const transport_catalogue_protobuf::Color &color_proto) {
   svg::Color color;
 
@@ -181,7 +181,7 @@ svg::Color color_deserialization(
   return color;
 }
 
-transport_catalogue_protobuf::RenderSettings render_settings_serialization(
+transport_catalogue_protobuf::RenderSettings RenderSettingsSerialization(
     const renderer::RenderSettings &render_settings) {
   transport_catalogue_protobuf::RenderSettings render_settings_proto;
 
@@ -210,20 +210,20 @@ transport_catalogue_protobuf::RenderSettings render_settings_serialization(
   *render_settings_proto.mutable_stop_label_offset_() =
       std::move(stop_label_offset_proto);
   *render_settings_proto.mutable_underlayer_color_() =
-      std::move(color_serialization(render_settings.underlayer_color_));
+      std::move(ColorSerialization(render_settings.underlayer_color_));
   render_settings_proto.set_underlayer_width_(
       render_settings.underlayer_width_);
 
   const auto &colors = render_settings.color_palette_;
   for (const auto &color : colors) {
     *render_settings_proto.add_color_palette_() =
-        std::move(color_serialization(color));
+        std::move(ColorSerialization(color));
   }
 
   return render_settings_proto;
 }
 
-renderer::RenderSettings render_settings_deserialization(
+renderer::RenderSettings RenderSettingsDeserialization(
     const transport_catalogue_protobuf::RenderSettings &render_settings_proto) {
   renderer::RenderSettings render_settings;
 
@@ -249,18 +249,18 @@ renderer::RenderSettings render_settings_deserialization(
       render_settings_proto.stop_label_offset_().y();
 
   render_settings.underlayer_color_ =
-      color_deserialization(render_settings_proto.underlayer_color_());
+      ColorDeserialization(render_settings_proto.underlayer_color_());
   render_settings.underlayer_width_ = render_settings_proto.underlayer_width_();
 
   for (const auto &color_proto : render_settings_proto.color_palette_()) {
     render_settings.color_palette_.push_back(
-        color_deserialization(color_proto));
+        ColorDeserialization(color_proto));
   }
 
   return render_settings;
 }
 
-transport_catalogue_protobuf::RoutingSettings routing_settings_serialization(
+transport_catalogue_protobuf::RoutingSettings RoutingSettingsSerialization(
     const domain::RoutingSettings &routing_settings) {
   transport_catalogue_protobuf::RoutingSettings routing_settings_proto;
 
@@ -270,7 +270,7 @@ transport_catalogue_protobuf::RoutingSettings routing_settings_serialization(
   return routing_settings_proto;
 }
 
-domain::RoutingSettings routing_settings_deserialization(
+domain::RoutingSettings RoutingSettingsDeserialization(
     const transport_catalogue_protobuf::RoutingSettings
         &routing_settings_proto) {
   domain::RoutingSettings routing_settings;
@@ -281,18 +281,18 @@ domain::RoutingSettings routing_settings_deserialization(
   return routing_settings;
 }
 
-void catalogue_serialization(
+void CatalogueSerialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue,
     const renderer::RenderSettings &render_settings,
     const domain::RoutingSettings &routing_settings, std::ostream &out) {
   transport_catalogue_protobuf::Catalogue catalogue_proto;
 
   transport_catalogue_protobuf::TransportCatalogue transport_catalogue_proto =
-      transport_catalogue_serialization(transport_catalogue);
+      TransportCatalogueSerialization(transport_catalogue);
   transport_catalogue_protobuf::RenderSettings render_settings_proto =
-      render_settings_serialization(render_settings);
+      RenderSettingsSerialization(render_settings);
   transport_catalogue_protobuf::RoutingSettings routing_settings_proto =
-      routing_settings_serialization(routing_settings);
+      RoutingSettingsSerialization(routing_settings);
 
   *catalogue_proto.mutable_transport_catalogue() =
       std::move(transport_catalogue_proto);
@@ -303,7 +303,7 @@ void catalogue_serialization(
   catalogue_proto.SerializePartialToOstream(&out);
 }
 
-Catalogue catalogue_deserialization(std::istream &in) {
+Catalogue CatalogueDeserialization(std::istream &in) {
   transport_catalogue_protobuf::Catalogue catalogue_proto;
   auto success_parsing_catalogue_from_istream =
       catalogue_proto.ParseFromIstream(&in);
@@ -312,10 +312,10 @@ Catalogue catalogue_deserialization(std::istream &in) {
     throw std::runtime_error("cannot parse serialized file from istream");
   }
 
-  return {transport_catalogue_deserialization(
+  return {TransportCatalogueDeserialization(
               catalogue_proto.transport_catalogue()),
-          render_settings_deserialization(catalogue_proto.render_settings()),
-          routing_settings_deserialization(catalogue_proto.routing_settings())};
+          RenderSettingsDeserialization(catalogue_proto.render_settings()),
+          RoutingSettingsDeserialization(catalogue_proto.routing_settings())};
 }
 
 }  // end namespace serialization

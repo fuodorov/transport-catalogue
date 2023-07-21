@@ -23,35 +23,35 @@ struct Catalogue {
 };
 
 template <typename It>
-uint32_t calculate_id(It start, It end, std::string_view name);
+uint32_t CalcId(It start, It end, std::string_view name);
 
 transport_catalogue_protobuf::TransportCatalogue
-transport_catalogue_serialization(
+TransportCatalogueSerialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue);
-transport_catalogue::TransportCatalogue transport_catalogue_deserialization(
+transport_catalogue::TransportCatalogue TransportCatalogueDeserialization(
     const transport_catalogue_protobuf::TransportCatalogue
         &transport_catalogue_proto);
 
-transport_catalogue_protobuf::Color color_serialization(
+transport_catalogue_protobuf::Color ColorSerialization(
     const svg::Color &tc_color);
-svg::Color color_deserialization(
+svg::Color ColorDeserialization(
     const transport_catalogue_protobuf::Color &color_proto);
-transport_catalogue_protobuf::RenderSettings render_settings_serialization(
+transport_catalogue_protobuf::RenderSettings RenderSettingsSerialization(
     const renderer::RenderSettings &render_settings);
-renderer::RenderSettings render_settings_deserialization(
+renderer::RenderSettings RenderSettingsDeserialization(
     const transport_catalogue_protobuf::RenderSettings &render_settings_proto);
 
-transport_catalogue_protobuf::RoutingSettings routing_settings_serialization(
+transport_catalogue_protobuf::RoutingSettings RoutingSettingsSerialization(
     const domain::RoutingSettings &routing_settings);
-domain::RoutingSettings routing_settings_deserialization(
+domain::RoutingSettings RoutingSettingsDeserialization(
     const transport_catalogue_protobuf::RoutingSettings
         &routing_settings_proto);
 
-void catalogue_serialization(
+void CatalogueSerialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue,
     const renderer::RenderSettings &render_settings,
     const domain::RoutingSettings &routing_settings, std::ostream &out);
 
-Catalogue catalogue_deserialization(std::istream &in);
+Catalogue CatalogueDeserialization(std::istream &in);
 
 }  // end namespace serialization
