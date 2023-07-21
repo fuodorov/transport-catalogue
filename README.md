@@ -5,7 +5,7 @@
 
 Для сборки нашего приложения и создания Docker-образа достаточно будет выполнить следующую команду:
 
-`docker build -t transport_catalogue .``
+`docker build -t transport_catalogue .`
 
 Для запуска приложения используем команду:
 
