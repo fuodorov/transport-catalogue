@@ -16,7 +16,7 @@ class JSONReader {
 
   void parse_node_base(const Node &root, TransportCatalogue &catalogue);
   void parse_node_stat(const Node &root,
-                       std::vector<StatRequest> &stat_request);
+                       std::vector<StatisticRequest> &stat_request);
   void parse_node_render(const Node &node,
                          map_renderer::RenderSettings &render_settings);
   void parse_node_routing(const Node &node, router::RoutingSettings &route_set);
@@ -31,7 +31,7 @@ class JSONReader {
       serialization::SerializationSettings &serialization_settings);
 
   void parse_node_process_requests(
-      std::vector<StatRequest> &stat_request,
+      std::vector<StatisticRequest> &stat_request,
       serialization::SerializationSettings &serialization_settings);
 
   Stop parse_node_stop(Node &node);

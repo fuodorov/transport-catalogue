@@ -39,8 +39,8 @@ std::vector<Distance> JSONReader::parse_node_distances(
       for (auto [key, value] : stop_road_map) {
         last_name = key;
         distance = value.AsInt();
-        distances.push_back({catalogue.get_stop(begin_name),
-                             catalogue.get_stop(last_name), distance});
+        distances.push_back({catalogue.GetStop(begin_name),
+                             catalogue.GetStop(last_name), distance});
       }
 
     } catch (...) {
@@ -59,16 +59,16 @@ Bus JSONReader::parse_node_bus(Node &node, TransportCatalogue &catalogue) {
   if (node.IsDict()) {
     bus_node = node.AsDict();
     bus.name = bus_node.at("name").AsString();
-    bus.is_roundtrip = bus_node.at("is_roundtrip").AsBool();
+    bus.is_round_trip = bus_node.at("is_round_trip").AsBool();
 
     try {
       bus_stops = bus_node.at("stops").AsArray();
 
       for (Node stop : bus_stops) {
-        bus.stops.push_back(catalogue.get_stop(stop.AsString()));
+        bus.stops.push_back(catalogue.GetStop(stop.AsString()));
       }
 
-      if (!bus.is_roundtrip) {
+      if (!bus.is_round_trip) {
         size_t size = bus.stops.size() - 1;
 
         for (size_t i = size; i > 0; i--) {
@@ -120,15 +120,15 @@ void JSONReader::parse_node_base(const Node &root,
     }
 
     for (auto stop : stops) {
-      catalogue.add_stop(parse_node_stop(stop));
+      catalogue.AddStop(parse_node_stop(stop));
     }
 
     for (auto stop : stops) {
-      catalogue.add_distance(parse_node_distances(stop, catalogue));
+      catalogue.AddDistance(parse_node_distances(stop, catalogue));
     }
 
     for (auto bus : buses) {
-      catalogue.add_bus(parse_node_bus(bus, catalogue));
+      catalogue.AddBus(parse_node_bus(bus, catalogue));
     }
 
   } else {
@@ -137,10 +137,10 @@ void JSONReader::parse_node_base(const Node &root,
 }
 
 void JSONReader::parse_node_stat(const Node &node,
-                                 std::vector<StatRequest> &stat_request) {
+                                 std::vector<StatisticRequest> &stat_request) {
   Array stat_requests;
   Dict req_map;
-  StatRequest req;
+  StatisticRequest req;
 
   if (node.IsArray()) {
     stat_requests = node.AsArray();
@@ -352,7 +352,7 @@ void JSONReader::parse_node_make_base(
 }
 
 void JSONReader::parse_node_process_requests(
-    std::vector<StatRequest> &stat_request,
+    std::vector<StatisticRequest> &stat_request,
     serialization::SerializationSettings &serialization_settings) {
   Dict root_dictionary;
 

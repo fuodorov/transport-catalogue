@@ -27,21 +27,21 @@ class RequestHandler {
   std::vector<std::string_view> get_sort_buses_names(
       TransportCatalogue &catalogue_) const;
 
-  BusQueryResult bus_query(TransportCatalogue &catalogue, std::string_view str);
-  StopQueryResult stop_query(TransportCatalogue &catalogue,
+  BusInfo bus_query(TransportCatalogue &catalogue, std::string_view str);
+  StopInfo stop_query(TransportCatalogue &catalogue,
                              std::string_view stop_name);
 
   Node execute_MakeNode_stop(int id_request,
-                             const StopQueryResult &query_result);
-  Node execute_MakeNode_bus(int id_request, const BusQueryResult &query_result);
+                             const StopInfo &query_result);
+  Node execute_MakeNode_bus(int id_request, const BusInfo &query_result);
   Node execute_MakeNode_map(int id_request, TransportCatalogue &catalogue,
                             RenderSettings render_settings);
-  Node execute_MakeNode_route(StatRequest &request,
+  Node execute_MakeNode_route(StatisticRequest &request,
                               TransportCatalogue &catalogue,
                               TransportRouter &routing);
 
   void execute_queries(TransportCatalogue &catalogue,
-                       std::vector<StatRequest> &stat_requests,
+                       std::vector<StatisticRequest> &stat_requests,
                        RenderSettings &render_settings,
                        RoutingSettings &route_settings);
 

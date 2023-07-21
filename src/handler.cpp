@@ -37,7 +37,7 @@ struct EdgeInfoGetter {
 };
 
 Node RequestHandler::execute_MakeNode_stop(int id_request,
-                                           const StopQueryResult &stop_info) {
+                                           const StopInfo &stop_info) {
   Node result;
   Array buses;
   Builder builder;
@@ -74,7 +74,7 @@ Node RequestHandler::execute_MakeNode_stop(int id_request,
 }
 
 Node RequestHandler::execute_MakeNode_bus(int id_request,
-                                          const BusQueryResult &bus_info) {
+                                          const BusInfo &bus_info) {
   Node result;
   std::string str_not_found = "not found";
 
@@ -135,7 +135,7 @@ Node RequestHandler::execute_MakeNode_map(int id_request,
   return result;
 }
 
-Node RequestHandler::execute_MakeNode_route(StatRequest &request,
+Node RequestHandler::execute_MakeNode_route(StatisticRequest &request,
                                             TransportCatalogue &catalogue,
                                             TransportRouter &routing) {
   const auto &route_info =
@@ -170,7 +170,7 @@ Node RequestHandler::execute_MakeNode_route(StatRequest &request,
 }
 
 void RequestHandler::execute_queries(TransportCatalogue &catalogue,
-                                     std::vector<StatRequest> &stat_requests,
+                                     std::vector<StatisticRequest> &stat_requests,
                                      RenderSettings &render_settings,
                                      RoutingSettings &routing_settings) {
   std::vector<Node> result_request;
@@ -179,7 +179,7 @@ void RequestHandler::execute_queries(TransportCatalogue &catalogue,
   transport_router.set_routing_settings(routing_settings);
   transport_router.build_router(catalogue);
 
-  for (StatRequest req : stat_requests) {
+  for (StatisticRequest req : stat_requests) {
     if (req.type == "Stop") {
       result_request.push_back(
           execute_MakeNode_stop(req.id, stop_query(catalogue, req.name)));
@@ -215,10 +215,10 @@ void RequestHandler::execute_render_map(MapRenderer &map_catalogue,
     return;
   }
 
-  auto buses = catalogue.get_busname_to_bus();
+  auto buses = catalogue.GetBusNames();
   if (buses.size() > 0) {
     for (std::string_view bus_name : get_sort_buses_names(catalogue)) {
-      Bus *bus_info = catalogue.get_bus(bus_name);
+      Bus *bus_info = catalogue.GetBus(bus_name);
 
       if (bus_info) {
         if (bus_info->stops.size() > 0) {
@@ -234,11 +234,11 @@ void RequestHandler::execute_render_map(MapRenderer &map_catalogue,
 
     if (buses_palette.size() > 0) {
       map_catalogue.add_line(buses_palette);
-      map_catalogue.add_buses_name(buses_palette);
+      map_catalogue.AddBuses_name(buses_palette);
     }
   }
 
-  auto stops = catalogue.get_stopname_to_stop();
+  auto stops = catalogue.GetStopNames();
   if (stops.size() > 0) {
     std::vector<std::string_view> stops_name;
 
@@ -251,7 +251,7 @@ void RequestHandler::execute_render_map(MapRenderer &map_catalogue,
     std::sort(stops_name.begin(), stops_name.end());
 
     for (std::string_view stop_name : stops_name) {
-      Stop *stop = catalogue.get_stop(stop_name);
+      Stop *stop = catalogue.GetStop(stop_name);
       if (stop) {
         stops_sort.push_back(stop);
       }
@@ -268,14 +268,14 @@ std::optional<RouteInfo> RequestHandler::get_route_info(
     std::string_view start, std::string_view end, TransportCatalogue &catalogue,
     TransportRouter &routing) const {
   return routing.get_route_info(
-      routing.get_router_by_stop(catalogue.get_stop(start))->bus_wait_start,
-      routing.get_router_by_stop(catalogue.get_stop(end))->bus_wait_start);
+      routing.get_router_by_stop(catalogue.GetStop(start))->bus_wait_start,
+      routing.get_router_by_stop(catalogue.GetStop(end))->bus_wait_start);
 }
 
 std::vector<geo::Coordinates> RequestHandler::get_stops_coordinates(
     TransportCatalogue &catalogue_) const {
   std::vector<geo::Coordinates> stops_coordinates;
-  auto buses = catalogue_.get_busname_to_bus();
+  auto buses = catalogue_.GetBusNames();
 
   for (auto &[busname, bus] : buses) {
     for (auto &stop : bus->stops) {
@@ -293,7 +293,7 @@ std::vector<std::string_view> RequestHandler::get_sort_buses_names(
     TransportCatalogue &catalogue_) const {
   std::vector<std::string_view> buses_names;
 
-  auto buses = catalogue_.get_busname_to_bus();
+  auto buses = catalogue_.GetBusNames();
   if (buses.size() > 0) {
     for (auto &[busname, bus] : buses) {
       buses_names.push_back(busname);
@@ -308,20 +308,20 @@ std::vector<std::string_view> RequestHandler::get_sort_buses_names(
   }
 }
 
-BusQueryResult RequestHandler::bus_query(TransportCatalogue &catalogue,
+BusInfo RequestHandler::bus_query(TransportCatalogue &catalogue,
                                          std::string_view bus_name) {
-  BusQueryResult bus_info;
-  Bus *bus = catalogue.get_bus(bus_name);
+  BusInfo bus_info;
+  Bus *bus = catalogue.GetBus(bus_name);
 
   if (bus != nullptr) {
     bus_info.name = bus->name;
     bus_info.not_found = false;
     bus_info.stops_on_route = static_cast<int>(bus->stops.size());
     bus_info.unique_stops =
-        static_cast<int>(catalogue.get_uniq_stops(bus).size());
+        static_cast<int>(catalogue.GetUniqueStops(bus).size());
     bus_info.route_length = static_cast<int>(bus->route_length);
     bus_info.curvature =
-        double(catalogue.get_distance_to_bus(bus) / catalogue.get_length(bus));
+        double(catalogue.GetDistanceBuses(bus) / catalogue.GetLength(bus));
   } else {
     bus_info.name = bus_name;
     bus_info.not_found = true;
@@ -330,16 +330,16 @@ BusQueryResult RequestHandler::bus_query(TransportCatalogue &catalogue,
   return bus_info;
 }
 
-StopQueryResult RequestHandler::stop_query(TransportCatalogue &catalogue,
+StopInfo RequestHandler::stop_query(TransportCatalogue &catalogue,
                                            std::string_view stop_name) {
   std::unordered_set<const Bus *> unique_buses;
-  StopQueryResult stop_info;
-  Stop *stop = catalogue.get_stop(stop_name);
+  StopInfo stop_info;
+  Stop *stop = catalogue.GetStop(stop_name);
 
   if (stop != NULL) {
     stop_info.name = stop->name;
     stop_info.not_found = false;
-    unique_buses = catalogue.stop_get_uniq_buses(stop);
+    unique_buses = catalogue.GetUniqueBuses(stop);
 
     if (unique_buses.size() > 0) {
       for (const Bus *bus : unique_buses) {

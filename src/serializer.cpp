@@ -15,9 +15,9 @@ transport_catalogue_serialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue) {
   transport_catalogue_protobuf::TransportCatalogue transport_catalogue_proto;
 
-  const auto &stops = transport_catalogue.get_stops();
-  const auto &buses = transport_catalogue.get_buses();
-  const auto &distances = transport_catalogue.get_distance();
+  const auto &stops = transport_catalogue.GetStops();
+  const auto &buses = transport_catalogue.GetBuses();
+  const auto &distances = transport_catalogue.GetDistance();
 
   int id = 0;
   for (const auto &stop : stops) {
@@ -43,20 +43,20 @@ transport_catalogue_serialization(
       bus_proto.add_stops(stop_id);
     }
 
-    bus_proto.set_is_roundtrip(bus.is_roundtrip);
+    bus_proto.set_is_round_trip(bus.is_round_trip);
     bus_proto.set_route_length(bus.route_length);
 
     *transport_catalogue_proto.add_buses() = std::move(bus_proto);
   }
 
-  for (const auto &[pair_stops, pair_distance] : distances) {
+  for (const auto &[stops_pair, pair_distance] : distances) {
     transport_catalogue_protobuf::Distance distance_proto;
 
     distance_proto.set_start(
-        calculate_id(stops.cbegin(), stops.cend(), pair_stops.first->name));
+        calculate_id(stops.cbegin(), stops.cend(), stops_pair.first->name));
 
     distance_proto.set_end(
-        calculate_id(stops.cbegin(), stops.cend(), pair_stops.second->name));
+        calculate_id(stops.cbegin(), stops.cend(), stops_pair.second->name));
 
     distance_proto.set_distance(pair_distance);
 
@@ -82,26 +82,26 @@ transport_catalogue::TransportCatalogue transport_catalogue_deserialization(
     tc_stop.latitude = stop.latitude();
     tc_stop.longitude = stop.longitude();
 
-    transport_catalogue.add_stop(std::move(tc_stop));
+    transport_catalogue.AddStop(std::move(tc_stop));
   }
 
-  const auto &tc_stops = transport_catalogue.get_stops();
+  const auto &tc_stops = transport_catalogue.GetStops();
 
   std::vector<domain::Distance> distances;
   for (const auto &distance : distances_proto) {
     domain::Distance tc_distance;
 
     tc_distance.start =
-        transport_catalogue.get_stop(tc_stops[distance.start()].name);
+        transport_catalogue.GetStop(tc_stops[distance.start()].name);
     tc_distance.end =
-        transport_catalogue.get_stop(tc_stops[distance.end()].name);
+        transport_catalogue.GetStop(tc_stops[distance.end()].name);
 
     tc_distance.distance = distance.distance();
 
     distances.push_back(tc_distance);
   }
 
-  transport_catalogue.add_distance(distances);
+  transport_catalogue.AddDistance(distances);
 
   for (const auto &bus_proto : buses_proto) {
     domain::Bus tc_bus;
@@ -110,13 +110,13 @@ transport_catalogue::TransportCatalogue transport_catalogue_deserialization(
 
     for (auto stop_id : bus_proto.stops()) {
       auto name = tc_stops[stop_id].name;
-      tc_bus.stops.push_back(transport_catalogue.get_stop(name));
+      tc_bus.stops.push_back(transport_catalogue.GetStop(name));
     }
 
-    tc_bus.is_roundtrip = bus_proto.is_roundtrip();
+    tc_bus.is_round_trip = bus_proto.is_round_trip();
     tc_bus.route_length = bus_proto.route_length();
 
-    transport_catalogue.add_bus(std::move(tc_bus));
+    transport_catalogue.AddBus(std::move(tc_bus));
   }
 
   return transport_catalogue;

@@ -53,7 +53,7 @@
                   "Улица Докучаева",
                   "Улица Лизы Чайкиной"
               ],
-              "is_roundtrip": true
+              "is_round_trip": true
           },
           {
               "type": "Bus",
@@ -64,7 +64,7 @@
                   "Электросети",
                   "Санаторий Родина"
               ],
-              "is_roundtrip": false
+              "is_round_trip": false
           },
           {
               "type": "Bus",
@@ -73,7 +73,7 @@
                   "Морской вокзал",
                   "Ривьерский мост"
               ],
-              "is_roundtrip": false
+              "is_round_trip": false
           },
           {
               "type": "Stop",

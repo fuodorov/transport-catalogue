@@ -36,7 +36,7 @@ Bus ParseRoute(const json::Dict &info) {
   bus.unique_stops = {bus.stops.begin(), bus.stops.end()};
 
   bus.number = info.at("name"s).AsString();
-  bus.type = info.at("is_roundtrip"s).AsBool() ? RouteType::CIRCLE
+  bus.type = info.at("is_round_trip"s).AsBool() ? RouteType::CIRCLE
                                                : RouteType::TWO_DIRECTIONAL;
 
   return bus;

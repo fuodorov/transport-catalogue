@@ -14,54 +14,53 @@ using namespace domain;
 
 namespace transport_catalogue {
 
-struct DistanceHasher {
+struct DistancesHasher {
   std::hash<const void *> hasher;
 
   std::size_t operator()(
-      const std::pair<const Stop *, const Stop *> pair_stops) const noexcept {
-    auto hash_1 = static_cast<const void *>(pair_stops.first);
-    auto hash_2 = static_cast<const void *>(pair_stops.second);
-    return hasher(hash_1) * 17 + hasher(hash_2);
+      const std::pair<const Stop *, const Stop *> stops_pair) const noexcept {
+    return hasher(static_cast<const void *>(stops_pair.first)) * 42 +
+           hasher(static_cast<const void *>(stops_pair.second));
   }
 };
 
-typedef std::unordered_map<std::string_view, Stop *> StopMap;
-typedef std::unordered_map<std::string_view, Bus *> BusMap;
+typedef std::unordered_map<std::string_view, Stop *> StopsMap;
+typedef std::unordered_map<std::string_view, Bus *> BusesMap;
 typedef std::unordered_map<std::pair<const Stop *, const Stop *>, int,
-                           DistanceHasher>
-    DistanceMap;
+                           DistancesHasher>
+    DistancesMap;
 
 class TransportCatalogue {
  public:
-  void add_bus(Bus &&bus);
-  void add_stop(Stop &&stop);
-  void add_distance(const std::vector<Distance> &distances);
+  void AddBus(Bus &&bus);
+  void AddStop(Stop &&stop);
+  void AddDistance(const std::vector<Distance> &distances);
 
-  Bus *get_bus(std::string_view bus_name);
-  Stop *get_stop(std::string_view stop_name);
+  Bus *GetBus(std::string_view bus_name);
+  Stop *GetStop(std::string_view stop_name);
 
-  std::deque<Stop> get_stops() const;
-  std::deque<Bus> get_buses() const;
+  std::deque<Stop> GetStops() const;
+  std::deque<Bus> GetBuses() const;
 
-  BusMap get_busname_to_bus() const;
-  StopMap get_stopname_to_stop() const;
+  BusesMap GetBusNames() const;
+  StopsMap GetStopNames() const;
 
-  std::unordered_set<const Bus *> stop_get_uniq_buses(Stop *stop);
-  std::unordered_set<const Stop *> get_uniq_stops(Bus *bus);
-  double get_length(Bus *bus);
+  std::unordered_set<const Bus *> GetUniqueBuses(Stop *stop);
+  std::unordered_set<const Stop *> GetUniqueStops(Bus *bus);
+  double GetLength(Bus *bus);
 
-  DistanceMap get_distance() const;
-  size_t get_distance_stop(const Stop *start, const Stop *finish) const;
-  size_t get_distance_to_bus(Bus *bus);
+  DistancesMap GetDistance() const;
+  size_t GetDistanceStops(const Stop *start, const Stop *finish) const;
+  size_t GetDistanceBuses(Bus *bus);
 
  private:
   std::deque<Stop> stops;
-  StopMap stopname_to_stop;
+  StopsMap stop_names_to_stop;
 
   std::deque<Bus> buses;
-  BusMap busname_to_bus;
+  BusesMap bus_names_to_bus;
 
-  DistanceMap distance_to_stop;
+  DistancesMap distances_to_stop;
 };
 
 }  // end namespace transport_catalogue

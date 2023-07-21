@@ -84,7 +84,7 @@ class MapRenderer {
                                        svg::Point position) const;
 
   void add_line(std::vector<std::pair<Bus *, int>> &buses_palette);
-  void add_buses_name(std::vector<std::pair<Bus *, int>> &buses_palette);
+  void AddBuses_name(std::vector<std::pair<Bus *, int>> &buses_palette);
   void add_stops_circle(std::vector<Stop *> &stops_name);
   void add_stops_name(std::vector<Stop *> &stops_name);
 

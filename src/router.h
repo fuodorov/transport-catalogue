@@ -29,10 +29,10 @@ class TransportRouter {
   const Router<double> &get_router() const;
   const std::variant<StopEdge, BusEdge> &GetEdge(EdgeId id) const;
 
-  std::optional<RouterByStop> get_router_by_stop(Stop *stop) const;
+  std::optional<RouterStop> get_router_by_stop(Stop *stop) const;
   std::optional<RouteInfo> get_route_info(VertexId start, VertexId end) const;
 
-  const std::unordered_map<Stop *, RouterByStop> &get_stop_to_vertex() const;
+  const std::unordered_map<Stop *, RouterStop> &get_stop_to_vertex() const;
   const std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>>
       &get_edge_id_to_edge() const;
 
@@ -54,7 +54,7 @@ class TransportRouter {
                           const Bus *bus);
 
  private:
-  std::unordered_map<Stop *, RouterByStop> stop_to_router_;
+  std::unordered_map<Stop *, RouterStop> stop_to_router_;
   std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>> edge_id_to_edge_;
 
   std::unique_ptr<DirectedWeightedGraph<double>> graph_;
@@ -72,7 +72,7 @@ void TransportRouter::parse_bus_to_edges(
     size_t span = 0;
 
     for (auto it2 = std::next(it); it2 != last; ++it2) {
-      distance += transport_catalogue.get_distance_stop(*prev(it2), *it2);
+      distance += transport_catalogue.GetDistanceStops(*prev(it2), *it2);
       ++span;
 
       EdgeId id = graph_->AddEdge(make_edge_to_bus(*it, *it2, distance));

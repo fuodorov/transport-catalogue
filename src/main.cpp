@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   SerializationSettings serialization_settings;
 
   JSONReader json_reader;
-  vector<StatRequest> stat_request;
+  vector<StatisticRequest> stat_request;
 
   if (mode == "make_base"sv) {
     json_reader = JSONReader(cin);

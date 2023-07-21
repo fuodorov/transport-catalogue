@@ -10,7 +10,7 @@
 
 namespace domain {
 
-struct StatRequest {
+struct StatisticRequest {
   int id;
   std::string type;
   std::string name;
@@ -31,7 +31,7 @@ struct Stop {
 struct Bus {
   std::string name;
   std::vector<Stop *> stops;
-  bool is_roundtrip;
+  bool is_round_trip;
   size_t route_length;
 };
 
@@ -41,7 +41,7 @@ struct Distance {
   int distance;
 };
 
-struct BusQueryResult {
+struct BusInfo {
   std::string_view name;
   bool not_found;
   int stops_on_route;
@@ -50,7 +50,7 @@ struct BusQueryResult {
   double curvature;
 };
 
-struct StopQueryResult {
+struct StopInfo {
   std::string_view name;
   bool not_found;
   std::vector<std::string> buses_name;
@@ -72,7 +72,7 @@ struct RoutingSettings {
   double bus_velocity = 0;
 };
 
-struct RouterByStop {
+struct RouterStop {
   graph::VertexId bus_wait_start;
   graph::VertexId bus_wait_end;
 };

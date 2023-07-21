@@ -155,7 +155,7 @@ void MapRenderer::add_line(std::vector<std::pair<Bus *, int>> &buses_palette) {
   }
 }
 
-void MapRenderer::add_buses_name(
+void MapRenderer::AddBuses_name(
     std::vector<std::pair<Bus *, int>> &buses_palette) {
   std::vector<geo::Coordinates> stops_geo_coords;
   bool bus_empty = true;
@@ -177,7 +177,7 @@ void MapRenderer::add_buses_name(
     svg::Text route_title_notroundtrip;
 
     if (!bus_empty) {
-      if (bus->is_roundtrip) {
+      if (bus->is_round_trip) {
         set_route_text_additional_properties(
             route_name_roundtrip, std::string(bus->name),
             sphere_projector(stops_geo_coords[0]));

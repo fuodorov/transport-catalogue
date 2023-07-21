@@ -26,7 +26,7 @@ const std::variant<StopEdge, BusEdge> &TransportRouter::GetEdge(
   return edge_id_to_edge_.at(id);
 }
 
-std::optional<RouterByStop> TransportRouter::get_router_by_stop(
+std::optional<RouterStop> TransportRouter::get_router_by_stop(
     Stop *stop) const {
   if (stop_to_router_.count(stop)) {
     return stop_to_router_.at(stop);
@@ -53,7 +53,7 @@ std::optional<RouteInfo> TransportRouter::get_route_info(
   }
 }
 
-const std::unordered_map<Stop *, RouterByStop>
+const std::unordered_map<Stop *, RouterStop>
     &TransportRouter::get_stop_to_vertex() const {
   return stop_to_router_;
 }
@@ -66,7 +66,7 @@ std::deque<Stop *> TransportRouter::get_stops_ptr(
     TransportCatalogue &transport_catalogue) {
   std::deque<Stop *> stops_ptr;
 
-  for (auto [_, stop_ptr] : transport_catalogue.get_stopname_to_stop()) {
+  for (auto [_, stop_ptr] : transport_catalogue.GetStopNames()) {
     stops_ptr.push_back(stop_ptr);
   }
 
@@ -77,7 +77,7 @@ std::deque<Bus *> TransportRouter::get_bus_ptr(
     TransportCatalogue &transport_catalogue) {
   std::deque<Bus *> buses_ptr;
 
-  for (auto [_, bus_ptr] : transport_catalogue.get_busname_to_bus()) {
+  for (auto [_, bus_ptr] : transport_catalogue.GetBusNames()) {
     buses_ptr.push_back(bus_ptr);
   }
 
@@ -91,7 +91,7 @@ void TransportRouter::set_stops(const std::deque<Stop *> &stops) {
     VertexId first = i++;
     VertexId second = i++;
 
-    stop_to_router_[stop] = RouterByStop{first, second};
+    stop_to_router_[stop] = RouterStop{first, second};
   }
 }
 
@@ -110,7 +110,7 @@ void TransportRouter::add_edge_to_bus(TransportCatalogue &transport_catalogue) {
     parse_bus_to_edges(bus->stops.begin(), bus->stops.end(),
                        transport_catalogue, bus);
 
-    if (!bus->is_roundtrip) {
+    if (!bus->is_round_trip) {
       parse_bus_to_edges(bus->stops.rbegin(), bus->stops.rend(),
                          transport_catalogue, bus);
     }
