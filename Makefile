@@ -8,10 +8,10 @@ build: ## build program
 	cd build && cmake ../src && cmake --build .
 
 format: ## autoformat code with clang-format
-	clang-format -i src/*.cpp src/*.h src/*/*.cpp src/*/*.h -style=file
+	clang-format -i src/*.cpp src/*.h src/*/*.cpp src/*/*.h -style=Google
 
 deps: ## install dependencies
-	sudo apt install -y clang-format
+	sudo apt install -y clang-format 
 	sudo apt install -y libtbb-dev
 
 run: ## run
