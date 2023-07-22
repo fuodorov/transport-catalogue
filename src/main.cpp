@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     ofstream out_file(serialization_settings.file_name, ios::binary);
     CatalogueSerialization(transport_catalogue, render_settings,
-                            routing_settings, out_file);
+                           routing_settings, out_file);
 
   } else if (mode == "process_requests"sv) {
     json_reader = Parser(cin);

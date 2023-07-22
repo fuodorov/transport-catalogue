@@ -31,8 +31,8 @@ class TransportRouter {
   std::optional<RouteInfo> GetRouteInfo(VertexId start, VertexId end) const;
 
   const std::unordered_map<Stop *, RouterStop> &GetStopVertex() const;
-  const std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>>
-      &GetEdgeId() const;
+  const std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>> &GetEdgeId()
+      const;
 
   std::deque<Stop *> GetStops(TransportCatalogue &transport_catalogue);
   std::deque<Bus *> GetBuses(TransportCatalogue &transport_catalogue);
@@ -43,13 +43,11 @@ class TransportRouter {
   void SetStops(const std::deque<Stop *> &stops);
   void SetGraph(TransportCatalogue &transport_catalogue);
 
-  Edge<double> MakeEdgeBus(Stop *start, Stop *end,
-                                const double distance) const;
+  Edge<double> MakeEdgeBus(Stop *start, Stop *end, const double distance) const;
 
   template <typename Iterator>
   void ParseBus(Iterator first, Iterator last,
-                          const TransportCatalogue &transport_catalogue,
-                          const Bus *bus);
+                const TransportCatalogue &transport_catalogue, const Bus *bus);
 
  private:
   std::unordered_map<Stop *, RouterStop> stop_to_router_;
@@ -62,9 +60,9 @@ class TransportRouter {
 };
 
 template <typename Iterator>
-void TransportRouter::ParseBus(
-    Iterator first, Iterator last,
-    const TransportCatalogue &transport_catalogue, const Bus *bus) {
+void TransportRouter::ParseBus(Iterator first, Iterator last,
+                               const TransportCatalogue &transport_catalogue,
+                               const Bus *bus) {
   for (auto it = first; it != last; ++it) {
     size_t distance = 0;
     size_t span = 0;

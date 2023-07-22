@@ -24,8 +24,7 @@ const std::variant<StopEdge, BusEdge> &TransportRouter::GetEdge(
   return edge_id_to_edge_.at(id);
 }
 
-std::optional<RouterStop> TransportRouter::GetRouterStop(
-    Stop *stop) const {
+std::optional<RouterStop> TransportRouter::GetRouterStop(Stop *stop) const {
   if (stop_to_router_.count(stop)) {
     return stop_to_router_.at(stop);
   } else {
@@ -51,8 +50,8 @@ std::optional<RouteInfo> TransportRouter::GetRouteInfo(
   }
 }
 
-const std::unordered_map<Stop *, RouterStop>
-    &TransportRouter::GetStopVertex() const {
+const std::unordered_map<Stop *, RouterStop> &TransportRouter::GetStopVertex()
+    const {
   return stop_to_router_;
 }
 const std::unordered_map<EdgeId, std::variant<StopEdge, BusEdge>>
@@ -105,12 +104,11 @@ void TransportRouter::AddEdgeStop() {
 
 void TransportRouter::AddEdgeBus(TransportCatalogue &transport_catalogue) {
   for (auto bus : GetBuses(transport_catalogue)) {
-    ParseBus(bus->stops.begin(), bus->stops.end(),
-                       transport_catalogue, bus);
+    ParseBus(bus->stops.begin(), bus->stops.end(), transport_catalogue, bus);
 
     if (!bus->is_round_trip) {
-      ParseBus(bus->stops.rbegin(), bus->stops.rend(),
-                         transport_catalogue, bus);
+      ParseBus(bus->stops.rbegin(), bus->stops.rend(), transport_catalogue,
+               bus);
     }
   }
 }
@@ -126,13 +124,12 @@ void TransportRouter::SetGraph(TransportCatalogue &transport_catalogue) {
 }
 
 Edge<double> TransportRouter::MakeEdgeBus(Stop *start, Stop *end,
-                                               const double distance) const {
+                                          const double distance) const {
   Edge<double> result;
 
   result.from = stop_to_router_.at(start).bus_wait_end;
   result.to = stop_to_router_.at(end).bus_wait_start;
-  result.weight =
-      distance * 1.0 / (routing_settings_.bus_velocity * KM / HR);
+  result.weight = distance * 1.0 / (routing_settings_.bus_velocity * KM / HR);
 
   return result;
 }

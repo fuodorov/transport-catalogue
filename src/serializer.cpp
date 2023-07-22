@@ -253,8 +253,7 @@ renderer::RenderSettings RenderSettingsDeserialization(
   render_settings.underlayer_width_ = render_settings_proto.underlayer_width_();
 
   for (const auto &color_proto : render_settings_proto.color_palette_()) {
-    render_settings.color_palette_.push_back(
-        ColorDeserialization(color_proto));
+    render_settings.color_palette_.push_back(ColorDeserialization(color_proto));
   }
 
   return render_settings;
@@ -312,10 +311,10 @@ Catalogue CatalogueDeserialization(std::istream &in) {
     throw std::runtime_error("cannot parse serialized file from istream");
   }
 
-  return {TransportCatalogueDeserialization(
-              catalogue_proto.transport_catalogue()),
-          RenderSettingsDeserialization(catalogue_proto.render_settings()),
-          RoutingSettingsDeserialization(catalogue_proto.routing_settings())};
+  return {
+      TransportCatalogueDeserialization(catalogue_proto.transport_catalogue()),
+      RenderSettingsDeserialization(catalogue_proto.render_settings()),
+      RoutingSettingsDeserialization(catalogue_proto.routing_settings())};
 }
 
 }  // end namespace serialization
