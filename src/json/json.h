@@ -6,8 +6,7 @@
 #include <variant>
 #include <vector>
 
-namespace transport_catalogue {
-namespace json {
+namespace transport_catalogue::json {
 
 class Node;
 
@@ -83,5 +82,4 @@ inline bool operator!=(const Document& lhs, const Document& rhs) {
 Document Load(std::istream& input);
 void Print(const Document& document, std::ostream& output);
 
-}  // end namespace json
-}  // end namespace transport_catalogue
+}  // end namespace transport_catalogue::json

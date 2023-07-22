@@ -2,8 +2,7 @@
 
 using namespace std;
 
-namespace transport_catalogue {
-namespace json {
+namespace transport_catalogue::json {
 namespace {
 
 Node LoadNode(istream& input);
@@ -442,5 +441,4 @@ void Print(const Document& document, std::ostream& output) {
   PrintNode(document.GetRoot(), PrintContext{output});
 }
 
-}  // end namespace json
-}  // end namespace transport_catalogue
+}  // namespace transport_catalogue::json

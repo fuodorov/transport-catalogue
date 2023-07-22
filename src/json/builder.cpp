@@ -1,9 +1,6 @@
 #include "builder.h"
 
-namespace transport_catalogue {
-
-namespace json {
-namespace builder {
+namespace transport_catalogue::json::builder {
 
 BaseContext::BaseContext(Builder& builder) : builder_(builder) {}
 
@@ -193,7 +190,4 @@ Node Builder::Build() {
   return root_;
 }
 
-}  // end namespace builder
-}  // end namespace json
-
-}  // end namespace transport_catalogue
+}  // end namespace transport_catalogue::json::builder

@@ -6,9 +6,7 @@
 
 #include "json.h"
 
-namespace transport_catalogue {
-namespace json {
-namespace builder {
+namespace transport_catalogue::json::builder {
 
 class KeyContext;
 class DictionaryContext;
@@ -87,6 +85,4 @@ class ArrayContext : public BaseContext {
   ArrayContext Value(const Node::Value& value);
 };
 
-}  // end namespace builder
-}  // end namespace json
-}  // end namespace transport_catalogue
+}  // end namespace transport_catalogue::json::builder
