@@ -36,7 +36,7 @@ class TransportCatalogue {
   void AddStop(Stop &&stop);
   void AddDistance(const std::vector<Distance> &distances);
 
-  Bus *GetBus(std::string_view bus_name);
+  Bus *GetBus(std::string_view name);
   Stop *GetStop(std::string_view stop_name);
   std::deque<Stop> GetStops() const;
   std::deque<Bus> GetBuses() const;

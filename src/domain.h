@@ -71,7 +71,7 @@ struct StopEdge {
 };
 
 struct BusEdge {
-  std::string_view bus_name;
+  std::string_view name;
   size_t span_count = 0;
   double time = 0;
 };

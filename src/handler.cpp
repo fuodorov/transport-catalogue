@@ -2,8 +2,8 @@
 
 namespace handler {
 
-struct EdgeInfoGetter {
-  Node operator()(const StopEdge &edge_info) {
+struct Edge {
+  Node operator()(const StopEdge &edge) {
     using namespace std::literals;
 
     return Builder{}
@@ -11,14 +11,14 @@ struct EdgeInfoGetter {
         .Key("type")
         .Value("Wait")
         .Key("stop_name")
-        .Value(std::string(edge_info.name))
+        .Value(std::string(edge.name))
         .Key("time")
-        .Value(edge_info.time)
+        .Value(edge.time)
         .EndDict()
         .Build();
   }
 
-  Node operator()(const BusEdge &edge_info) {
+  Node operator()(const BusEdge &edge) {
     using namespace std::literals;
 
     return Builder{}
@@ -26,89 +26,70 @@ struct EdgeInfoGetter {
         .Key("type")
         .Value("Bus")
         .Key("bus")
-        .Value(std::string(edge_info.bus_name))
+        .Value(std::string(edge.name))
         .Key("span_count")
-        .Value(static_cast<int>(edge_info.span_count))
+        .Value(static_cast<int>(edge.span_count))
         .Key("time")
-        .Value(edge_info.time)
+        .Value(edge.time)
         .EndDict()
         .Build();
   }
 };
 
-Node Handler::MakeStopNode(int id_request, const StopInfo &stop_info) {
-  Node result;
-  Array buses;
-  Builder builder;
-
-  std::string str_not_found = "not found";
-
-  if (stop_info.not_found) {
-    builder.StartDict()
+Node Handler::MakeStopNode(int request_id, const StopInfo &stop) {
+  if (stop.not_found) {
+    return Builder{}
+        .StartDict()
         .Key("request_id")
-        .Value(id_request)
+        .Value(request_id)
         .Key("error_message")
-        .Value(str_not_found)
-        .EndDict();
-
-    result = builder.Build();
-
+        .Value("not found")
+        .EndDict()
+        .Build();
   } else {
-    builder.StartDict()
-        .Key("request_id")
-        .Value(id_request)
-        .Key("buses")
-        .StartArray();
-
-    for (std::string bus_name : stop_info.buses_name) {
-      builder.Value(bus_name);
+    Array buses;
+    for (std::string name : stop.buses_name) {
+      buses.emplace_back(name);
     }
 
-    builder.EndArray().EndDict();
-
-    result = builder.Build();
+    return Builder{}
+        .StartDict()
+        .Key("request_id")
+        .Value(request_id)
+        .Key("buses")
+        .Value(buses)
+        .EndDict()
+        .Build();
   }
-
-  return result;
 }
 
-Node Handler::MakeBusNode(int id_request, const BusInfo &bus_info) {
-  Node result;
-  std::string str_not_found = "not found";
-
-  if (bus_info.not_found) {
-    result = Builder{}
-                 .StartDict()
-                 .Key("request_id")
-                 .Value(id_request)
-                 .Key("error_message")
-                 .Value(str_not_found)
-                 .EndDict()
-                 .Build();
-  } else {
-    result = Builder{}
-                 .StartDict()
-                 .Key("request_id")
-                 .Value(id_request)
-                 .Key("curvature")
-                 .Value(bus_info.curvature)
-                 .Key("route_length")
-                 .Value(bus_info.route_length)
-                 .Key("stop_count")
-                 .Value(bus_info.stops_on_route)
-                 .Key("unique_stop_count")
-                 .Value(bus_info.unique_stops)
-                 .EndDict()
-                 .Build();
-  }
-
-  return result;
+Node Handler::MakeBusNode(int request_id, const BusInfo &bus_info) {
+  return bus_info.not_found ? Builder{}
+                                  .StartDict()
+                                  .Key("request_id")
+                                  .Value(request_id)
+                                  .Key("error_message")
+                                  .Value("not found")
+                                  .EndDict()
+                                  .Build()
+                            : Builder{}
+                                  .StartDict()
+                                  .Key("request_id")
+                                  .Value(request_id)
+                                  .Key("stop_count")
+                                  .Value(bus_info.stops_on_route)
+                                  .Key("unique_stop_count")
+                                  .Value(bus_info.unique_stops)
+                                  .Key("route_length")
+                                  .Value(bus_info.route_length)
+                                  .Key("curvature")
+                                  .Value(bus_info.curvature)
+                                  .EndDict()
+                                  .Build();
 }
 
-Node Handler::MakeMapNode(int id_request, TransportCatalogue &catalogue_,
+Node Handler::MakeMapNode(int request_id, TransportCatalogue &catalogue_,
                           RenderSettings render_settings) {
-  Node result;
-
   std::ostringstream map_stream;
   std::string map_str;
 
@@ -120,25 +101,23 @@ Node Handler::MakeMapNode(int id_request, TransportCatalogue &catalogue_,
   map_catalogue.GetStreamMap(map_stream);
   map_str = map_stream.str();
 
-  result = Builder{}
-               .StartDict()
-               .Key("request_id")
-               .Value(id_request)
-               .Key("map")
-               .Value(map_str)
-               .EndDict()
-               .Build();
-
-  return result;
+  return Builder{}
+      .StartDict()
+      .Key("request_id")
+      .Value(request_id)
+      .Key("map")
+      .Value(map_str)
+      .EndDict()
+      .Build();
 }
 
 Node Handler::MakeRouteNode(StatisticRequest &request,
                             TransportCatalogue &catalogue,
                             TransportRouter &routing) {
-  const auto &route_info =
+  const auto &route =
       GetRouteInfo(request.from, request.to, catalogue, routing);
 
-  if (!route_info) {
+  if (!route) {
     return Builder{}
         .StartDict()
         .Key("request_id")
@@ -150,8 +129,8 @@ Node Handler::MakeRouteNode(StatisticRequest &request,
   }
 
   Array items;
-  for (const auto &item : route_info->edges) {
-    items.emplace_back(std::visit(EdgeInfoGetter{}, item));
+  for (const auto &item : route->edges) {
+    items.emplace_back(std::visit(Edge{}, item));
   }
 
   return Builder{}
@@ -159,7 +138,7 @@ Node Handler::MakeRouteNode(StatisticRequest &request,
       .Key("request_id")
       .Value(request.id)
       .Key("total_time")
-      .Value(route_info->total_time)
+      .Value(route->total_time)
       .Key("items")
       .Value(items)
       .EndDict()
@@ -170,59 +149,53 @@ void Handler::Queries(TransportCatalogue &catalogue,
                       std::vector<StatisticRequest> &stat_requests,
                       RenderSettings &render_settings,
                       RoutingSettings &routing_settings) {
-  std::vector<Node> result_request;
-  TransportRouter transport_router;
+  std::vector<Node> result;
+  TransportRouter router;
 
-  transport_router.SetRoutingSettings(routing_settings);
-  transport_router.BuildRouter(catalogue);
+  router.SetRoutingSettings(routing_settings);
+  router.BuildRouter(catalogue);
 
   for (StatisticRequest req : stat_requests) {
     if (req.type == "Stop") {
-      result_request.push_back(
-          MakeStopNode(req.id, StopQuery(catalogue, req.name)));
+      result.push_back(MakeStopNode(req.id, StopQuery(catalogue, req.name)));
 
     } else if (req.type == "Bus") {
-      result_request.push_back(
-          MakeBusNode(req.id, BusQuery(catalogue, req.name)));
+      result.push_back(MakeBusNode(req.id, BusQuery(catalogue, req.name)));
 
     } else if (req.type == "Map") {
-      result_request.push_back(MakeMapNode(req.id, catalogue, render_settings));
+      result.push_back(MakeMapNode(req.id, catalogue, render_settings));
 
     } else if (req.type == "Route") {
-      result_request.push_back(MakeRouteNode(req, catalogue, transport_router));
+      result.push_back(MakeRouteNode(req, catalogue, router));
     }
   }
 
-  document = Document{Node(result_request)};
+  document = Document{Node(result)};
 }
 
 void Handler::RenderMap(MapRenderer &map_catalogue,
                         TransportCatalogue &catalogue) const {
   std::vector<std::pair<Bus *, int>> buses_palette;
-  std::vector<Stop *> stops_sort;
-  int palette_size = 0;
-  int palette_index = 0;
+  std::vector<Stop *> tmp_stops;
+  int size = map_catalogue.GetPaletteSize();
+  int id = 0;
 
-  palette_size = map_catalogue.GetPaletteSize();
-
-  if (palette_size == 0) {
+  if (size == 0) {
     std::cout << "color palette is empty";
     return;
   }
 
   auto buses = catalogue.GetBusNames();
   if (buses.size() > 0) {
-    for (std::string_view bus_name : GetBusNames(catalogue)) {
-      Bus *bus_info = catalogue.GetBus(bus_name);
+    for (std::string_view name : GetBusNames(catalogue)) {
+      Bus *bus = catalogue.GetBus(name);
 
-      if (bus_info) {
-        if (bus_info->stops.size() > 0) {
-          buses_palette.push_back(std::make_pair(bus_info, palette_index));
-          palette_index++;
+      if (bus && bus->stops.size() > 0) {
+        buses_palette.push_back(std::make_pair(bus, id));
+        id++;
 
-          if (palette_index == palette_size) {
-            palette_index = 0;
-          }
+        if (id == size) {
+          id = 0;
         }
       }
     }
@@ -248,13 +221,13 @@ void Handler::RenderMap(MapRenderer &map_catalogue,
     for (std::string_view stop_name : stops_name) {
       Stop *stop = catalogue.GetStop(stop_name);
       if (stop) {
-        stops_sort.push_back(stop);
+        tmp_stops.push_back(stop);
       }
     }
 
-    if (stops_sort.size() > 0) {
-      map_catalogue.AddStopsCircle(stops_sort);
-      map_catalogue.AddStopsName(stops_sort);
+    if (tmp_stops.size() > 0) {
+      map_catalogue.AddStopsCircle(tmp_stops);
+      map_catalogue.AddStopsName(tmp_stops);
     }
   }
 }
@@ -270,87 +243,73 @@ std::optional<RouteInfo> Handler::GetRouteInfo(std::string_view start,
 
 std::vector<geo::Coordinates> Handler::GetStopsCoordinates(
     TransportCatalogue &catalogue_) const {
-  std::vector<geo::Coordinates> stops_coordinates;
-  auto buses = catalogue_.GetBusNames();
+  std::vector<geo::Coordinates> coordinates;
 
-  for (auto &[busname, bus] : buses) {
+  for (auto &[busname, bus] : catalogue_.GetBusNames()) {
     for (auto &stop : bus->stops) {
-      geo::Coordinates coordinates;
-      coordinates.latitude = stop->latitude;
-      coordinates.longitude = stop->longitude;
-
-      stops_coordinates.push_back(coordinates);
+      coordinates.push_back({stop->latitude, stop->longitude});
     }
   }
-  return stops_coordinates;
+  return coordinates;
 }
 
 std::vector<std::string_view> Handler::GetBusNames(
     TransportCatalogue &catalogue_) const {
-  std::vector<std::string_view> buses_names;
-
-  auto buses = catalogue_.GetBusNames();
-  if (buses.size() > 0) {
-    for (auto &[busname, bus] : buses) {
-      buses_names.push_back(busname);
-    }
-
-    std::sort(buses_names.begin(), buses_names.end());
-
-    return buses_names;
-
-  } else {
-    return {};
+  std::vector<std::string_view> names;
+  names.reserve(catalogue_.GetBuses().size());
+  for (const auto &bus : catalogue_.GetBuses()) {
+    names.push_back(bus.name);
   }
+  std::sort(names.begin(), names.end());
+  return names;
 }
 
 BusInfo Handler::BusQuery(TransportCatalogue &catalogue,
-                          std::string_view bus_name) {
-  BusInfo bus_info;
-  Bus *bus = catalogue.GetBus(bus_name);
+                          std::string_view name) {
+  BusInfo info;
+  Bus *bus = catalogue.GetBus(name);
 
   if (bus != nullptr) {
-    bus_info.name = bus->name;
-    bus_info.not_found = false;
-    bus_info.stops_on_route = static_cast<int>(bus->stops.size());
-    bus_info.unique_stops =
-        static_cast<int>(catalogue.GetUniqueStops(bus).size());
-    bus_info.route_length = static_cast<int>(bus->route_length);
-    bus_info.curvature =
+    info.name = bus->name;
+    info.not_found = false;
+    info.stops_on_route = static_cast<int>(bus->stops.size());
+    info.unique_stops = static_cast<int>(catalogue.GetUniqueStops(bus).size());
+    info.route_length = static_cast<int>(bus->route_length);
+    info.curvature =
         double(catalogue.GetDistanceBuses(bus) / catalogue.GetLength(bus));
   } else {
-    bus_info.name = bus_name;
-    bus_info.not_found = true;
+    info.name = name;
+    info.not_found = true;
   }
 
-  return bus_info;
+  return info;
 }
 
 StopInfo Handler::StopQuery(TransportCatalogue &catalogue,
-                            std::string_view stop_name) {
-  std::unordered_set<const Bus *> unique_buses;
-  StopInfo stop_info;
-  Stop *stop = catalogue.GetStop(stop_name);
+                            std::string_view name) {
+  std::unordered_set<const Bus *> unique;
+  StopInfo info;
+  Stop *stop = catalogue.GetStop(name);
 
-  if (stop != NULL) {
-    stop_info.name = stop->name;
-    stop_info.not_found = false;
-    unique_buses = catalogue.GetUniqueBuses(stop);
+  if (stop != nullptr) {
+    info.name = stop->name;
+    info.not_found = false;
+    unique = catalogue.GetUniqueBuses(stop);
 
-    if (unique_buses.size() > 0) {
-      for (const Bus *bus : unique_buses) {
-        stop_info.buses_name.push_back(bus->name);
+    if (unique.size() > 0) {
+      for (const Bus *bus : unique) {
+        info.buses_name.push_back(bus->name);
       }
 
-      std::sort(stop_info.buses_name.begin(), stop_info.buses_name.end());
+      std::sort(info.buses_name.begin(), info.buses_name.end());
     }
 
   } else {
-    stop_info.name = stop_name;
-    stop_info.not_found = true;
+    info.name = name;
+    info.not_found = true;
   }
 
-  return stop_info;
+  return info;
 }
 
 const Document &Handler::GetDocument() { return document; }

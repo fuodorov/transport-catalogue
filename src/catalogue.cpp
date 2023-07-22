@@ -28,10 +28,10 @@ void TransportCatalogue::AddDistance(const std::vector<Distance> &distances) {
   }
 }
 
-Bus *TransportCatalogue::GetBus(std::string_view bus_name) {
-  return buses_to_bus.empty() || !buses_to_bus.count(bus_name)
+Bus *TransportCatalogue::GetBus(std::string_view name) {
+  return buses_to_bus.empty() || !buses_to_bus.count(name)
              ? nullptr
-             : buses_to_bus.at(bus_name);
+             : buses_to_bus.at(name);
 }
 
 Stop *TransportCatalogue::GetStop(std::string_view stop_name) {

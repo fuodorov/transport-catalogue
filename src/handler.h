@@ -27,12 +27,12 @@ class Handler {
   std::vector<std::string_view> GetBusNames(
       TransportCatalogue &catalogue_) const;
 
-  BusInfo BusQuery(TransportCatalogue &catalogue, std::string_view str);
-  StopInfo StopQuery(TransportCatalogue &catalogue, std::string_view stop_name);
+  BusInfo BusQuery(TransportCatalogue &catalogue, std::string_view name);
+  StopInfo StopQuery(TransportCatalogue &catalogue, std::string_view name);
 
-  Node MakeStopNode(int id_request, const StopInfo &query_result);
-  Node MakeBusNode(int id_request, const BusInfo &query_result);
-  Node MakeMapNode(int id_request, TransportCatalogue &catalogue,
+  Node MakeStopNode(int request_id, const StopInfo &query);
+  Node MakeBusNode(int request_id, const BusInfo &query);
+  Node MakeMapNode(int request_id, TransportCatalogue &catalogue,
                    RenderSettings render_settings);
   Node MakeRouteNode(StatisticRequest &request, TransportCatalogue &catalogue,
                      TransportRouter &routing);
