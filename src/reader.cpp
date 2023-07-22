@@ -10,30 +10,19 @@ Stop Parser::ProcessNodeStop(Node &node) {
   return node.IsDict() ? Stop{node.AsDict().at("name").AsString(),
                               node.AsDict().at("latitude").AsDouble(),
                               node.AsDict().at("longitude").AsDouble()}
-                        : Stop();
+                       : Stop();
 }
 
 std::vector<Distance> Parser::ProcessNodeDistances(
     Node &node, TransportCatalogue &catalogue) {
   std::vector<Distance> distances;
-  Dict stop_node;
-  Dict stop_road_map;
-  std::string begin_name;
-  std::string last_name;
-  int distance;
 
   if (node.IsDict()) {
-    stop_node = node.AsDict();
-    begin_name = stop_node.at("name").AsString();
-
     try {
-      stop_road_map = stop_node.at("road_distances").AsDict();
-
-      for (auto [key, value] : stop_road_map) {
-        last_name = key;
-        distance = value.AsInt();
-        distances.push_back({catalogue.GetStop(begin_name),
-                             catalogue.GetStop(last_name), distance});
+      for (auto [key, value] : node.AsDict().at("road_distances").AsDict()) {
+        distances.push_back(
+            {catalogue.GetStop(node.AsDict().at("name").AsString()),
+             catalogue.GetStop(key), value.AsInt()});
       }
 
     } catch (...) {
@@ -46,18 +35,13 @@ std::vector<Distance> Parser::ProcessNodeDistances(
 
 Bus Parser::ProcessNodeBus(Node &node, TransportCatalogue &catalogue) {
   Bus bus;
-  Dict bus_node;
-  Array bus_stops;
 
   if (node.IsDict()) {
-    bus_node = node.AsDict();
-    bus.name = bus_node.at("name").AsString();
-    bus.is_round_trip = bus_node.at("is_round_trip").AsBool();
+    bus.name = node.AsDict().at("name").AsString();
+    bus.is_round_trip = node.AsDict().at("is_round_trip").AsBool();
 
     try {
-      bus_stops = bus_node.at("stops").AsArray();
-
-      for (Node stop : bus_stops) {
+      for (Node stop : node.AsDict().at("stops").AsArray()) {
         bus.stops.push_back(catalogue.GetStop(stop.AsString()));
       }
 
@@ -70,7 +54,7 @@ Bus Parser::ProcessNodeBus(Node &node, TransportCatalogue &catalogue) {
       }
 
     } catch (...) {
-      std::cout << "base_requests: bus: stops is empty" << std::endl;
+      std::cout << "invalide bus" << std::endl;
     }
   }
 
@@ -102,12 +86,12 @@ void Parser::ProcessNodeTransportCatalogue(const Node &root,
             } else if (req_node.AsString() == "Stop") {
               stops.push_back(req_map);
             } else {
-              std::cout << "base_requests are invalid";
+              std::cout << "base_requests are invalid" << std::endl;
             }
           }
 
         } catch (...) {
-          std::cout << "base_requests does not have type value";
+          std::cout << "base_requests does not have type value" << std::endl;
         }
       }
     }
@@ -125,7 +109,7 @@ void Parser::ProcessNodeTransportCatalogue(const Node &root,
     }
 
   } else {
-    std::cout << "base_requests is not an array";
+    std::cout << "base_requests is not an array" << std::endl;
   }
 }
 
@@ -166,140 +150,119 @@ void Parser::ProcessNodeStatisticRequest(
     }
 
   } else {
-    std::cout << "stat_requests is not array";
+    std::cout << "stat_requests is not array" << std::endl;
   }
 }
 
-void Parser::ProcessNodeRenderSettings(const Node &node,
-                                       renderer::RenderSettings &rend_set) {
-  Dict rend_map;
-  Array bus_lab_offset;
-  Array stop_lab_offset;
-  Array arr_color;
-  Array arr_palette;
-  uint8_t red_;
-  uint8_t green_;
-  uint8_t blue_;
-  double opacity_;
-
+void Parser::ProcessNodeRenderSettings(
+    const Node &node, renderer::RenderSettings &render_settings) {
   if (node.IsDict()) {
-    rend_map = node.AsDict();
-
     try {
-      rend_set.width_ = rend_map.at("width").AsDouble();
-      rend_set.height_ = rend_map.at("height").AsDouble();
-      rend_set.padding_ = rend_map.at("padding").AsDouble();
-      rend_set.line_width_ = rend_map.at("line_width").AsDouble();
-      rend_set.stop_radius_ = rend_map.at("stop_radius").AsDouble();
+      render_settings.width_ = node.AsDict().at("width").AsDouble();
+      render_settings.height_ = node.AsDict().at("height").AsDouble();
+      render_settings.padding_ = node.AsDict().at("padding").AsDouble();
+      render_settings.line_width_ = node.AsDict().at("line_width").AsDouble();
+      render_settings.stop_radius_ = node.AsDict().at("stop_radius").AsDouble();
+      render_settings.bus_label_font_size_ =
+          node.AsDict().at("bus_label_font_size").AsInt();
 
-      rend_set.bus_label_font_size_ =
-          rend_map.at("bus_label_font_size").AsInt();
-
-      if (rend_map.at("bus_label_offset").IsArray()) {
-        bus_lab_offset = rend_map.at("bus_label_offset").AsArray();
-        rend_set.bus_label_offset_ = std::make_pair(
-            bus_lab_offset[0].AsDouble(), bus_lab_offset[1].AsDouble());
+      if (node.AsDict().at("bus_label_offset").IsArray()) {
+        render_settings.bus_label_offset_ = std::make_pair(
+            node.AsDict().at("bus_label_offset").AsArray()[0].AsDouble(),
+            node.AsDict().at("bus_label_offset").AsArray()[1].AsDouble());
       }
 
-      rend_set.stop_label_font_size_ =
-          rend_map.at("stop_label_font_size").AsInt();
+      render_settings.stop_label_font_size_ =
+          node.AsDict().at("stop_label_font_size").AsInt();
 
-      if (rend_map.at("stop_label_offset").IsArray()) {
-        stop_lab_offset = rend_map.at("stop_label_offset").AsArray();
-        rend_set.stop_label_offset_ = std::make_pair(
-            stop_lab_offset[0].AsDouble(), stop_lab_offset[1].AsDouble());
+      if (node.AsDict().at("stop_label_offset").IsArray()) {
+        render_settings.stop_label_offset_ = std::make_pair(
+            node.AsDict().at("stop_label_offset").AsArray()[0].AsDouble(),
+            node.AsDict().at("stop_label_offset").AsArray()[1].AsDouble());
       }
 
-      if (rend_map.at("underlayer_color").IsString()) {
-        rend_set.underlayer_color_ =
-            svg::Color(rend_map.at("underlayer_color").AsString());
-      } else if (rend_map.at("underlayer_color").IsArray()) {
-        arr_color = rend_map.at("underlayer_color").AsArray();
-        red_ = arr_color[0].AsInt();
-        green_ = arr_color[1].AsInt();
-        blue_ = arr_color[2].AsInt();
-
-        if (arr_color.size() == 4) {
-          opacity_ = arr_color[3].AsDouble();
-          rend_set.underlayer_color_ =
-              svg::Color(svg::Rgba(red_, green_, blue_, opacity_));
-        } else if (arr_color.size() == 3) {
-          rend_set.underlayer_color_ =
-              svg::Color(svg::Rgb(red_, green_, blue_));
+      if (node.AsDict().at("underlayer_color").IsString()) {
+        render_settings.underlayer_color_ =
+            svg::Color(node.AsDict().at("underlayer_color").AsString());
+      } else if (node.AsDict().at("underlayer_color").IsArray()) {
+        if (node.AsDict().at("underlayer_color").AsArray().size() == 4) {
+          render_settings.underlayer_color_ = svg::Color(svg::Rgba(
+              node.AsDict().at("underlayer_color").AsArray()[0].AsInt(),
+              node.AsDict().at("underlayer_color").AsArray()[1].AsInt(),
+              node.AsDict().at("underlayer_color").AsArray()[2].AsInt(),
+              node.AsDict().at("underlayer_color").AsArray()[3].AsDouble()));
+        } else if (node.AsDict().at("underlayer_color").AsArray().size() == 3) {
+          render_settings.underlayer_color_ = svg::Color(svg::Rgb(
+              node.AsDict().at("underlayer_color").AsArray()[0].AsInt(),
+              node.AsDict().at("underlayer_color").AsArray()[1].AsInt(),
+              node.AsDict().at("underlayer_color").AsArray()[2].AsInt()));
         }
       }
 
-      rend_set.underlayer_width_ = rend_map.at("underlayer_width").AsDouble();
+      render_settings.underlayer_width_ =
+          node.AsDict().at("underlayer_width").AsDouble();
 
-      if (rend_map.at("color_palette").IsArray()) {
-        arr_palette = rend_map.at("color_palette").AsArray();
-
-        for (Node color_palette : arr_palette) {
+      if (node.AsDict().at("color_palette").IsArray()) {
+        for (Node color_palette : node.AsDict().at("color_palette").AsArray()) {
           if (color_palette.IsString()) {
-            rend_set.color_palette_.push_back(
+            render_settings.color_palette_.push_back(
                 svg::Color(color_palette.AsString()));
           } else if (color_palette.IsArray()) {
-            arr_color = color_palette.AsArray();
-            red_ = arr_color[0].AsInt();
-            green_ = arr_color[1].AsInt();
-            blue_ = arr_color[2].AsInt();
-
-            if (arr_color.size() == 4) {
-              opacity_ = arr_color[3].AsDouble();
-              rend_set.color_palette_.push_back(
-                  svg::Color(svg::Rgba(red_, green_, blue_, opacity_)));
-            } else if (arr_color.size() == 3) {
-              rend_set.color_palette_.push_back(
-                  svg::Color(svg::Rgb(red_, green_, blue_)));
+            if (node.AsDict().at("color_palette").AsArray().size() == 4) {
+              render_settings.color_palette_.push_back(svg::Color(svg::Rgba(
+                  color_palette.AsArray()[0].AsInt(),
+                  color_palette.AsArray()[1].AsInt(),
+                  color_palette.AsArray()[2].AsInt(),
+                  node.AsDict().at("color_palette").AsArray()[3].AsDouble())));
+            } else if (node.AsDict().at("color_palette").AsArray().size() ==
+                       3) {
+              render_settings.color_palette_.push_back(
+                  svg::Color(svg::Rgb(color_palette.AsArray()[0].AsInt(),
+                                      color_palette.AsArray()[1].AsInt(),
+                                      color_palette.AsArray()[2].AsInt())));
             }
           }
         }
       }
     } catch (...) {
-      std::cout << "unable to parsse init settings";
+      std::cout << "unable to parsse init settings" << std::endl;
     }
 
   } else {
-    std::cout << "render_settings is not map";
+    std::cout << "render_settings is not map" << std::endl;
   }
 }
 
-void Parser::ProcessNodeRoutingSettings(const Node &node,
-                                        router::RoutingSettings &route_set) {
-  Dict route;
-
+void Parser::ProcessNodeRoutingSettings(
+    const Node &node, router::RoutingSettings &route_settings) {
   if (node.IsDict()) {
-    route = node.AsDict();
-
     try {
-      route_set.bus_wait_time = route.at("bus_wait_time").AsDouble();
-      route_set.bus_velocity = route.at("bus_velocity").AsDouble();
+      route_settings.bus_wait_time =
+          node.AsDict().at("bus_wait_time").AsDouble();
+      route_settings.bus_velocity = node.AsDict().at("bus_velocity").AsDouble();
 
     } catch (...) {
-      std::cout << "unable to parse routing settings";
+      std::cout << "unable to parse routing settings" << std::endl;
     }
 
   } else {
-    std::cout << "routing settings is not map";
+    std::cout << "routing settings is not map" << std::endl;
   }
 }
 
 void Parser::ProcessNodeSerializationSettings(
-    const Node &node, serialization::SerializationSettings &serialization_set) {
-  Dict serialization;
-
+    const Node &node,
+    serialization::SerializationSettings &serialization_settings) {
   if (node.IsDict()) {
-    serialization = node.AsDict();
-
     try {
-      serialization_set.file_name = serialization.at("file").AsString();
+      serialization_settings.file_name = node.AsDict().at("file").AsString();
 
     } catch (...) {
-      std::cout << "unable to parse serialization settings";
+      std::cout << "unable to parse serialization settings" << std::endl;
     }
 
   } else {
-    std::cout << "serialization settings is not map";
+    std::cout << "serialization settings is not map" << std::endl;
   }
 }
 
@@ -307,68 +270,43 @@ void Parser::ProcessTransportCatalogue(
     TransportCatalogue &catalogue, renderer::RenderSettings &render_settings,
     router::RoutingSettings &routing_settings,
     serialization::SerializationSettings &serialization_settings) {
-  Dict root_dictionary;
-
   if (document.GetRoot().IsDict()) {
-    root_dictionary = document.GetRoot().AsDict();
-
     try {
-      ProcessNodeTransportCatalogue(root_dictionary.at("base_requests"),
-                                    catalogue);
-
-    } catch (...) {
-    }
-
-    try {
-      ProcessNodeRenderSettings(root_dictionary.at("render_settings"),
-                                render_settings);
-
-    } catch (...) {
-    }
-
-    try {
-      ProcessNodeRoutingSettings(root_dictionary.at("routing_settings"),
-                                 routing_settings);
-
-    } catch (...) {
-    }
-
-    try {
+      ProcessNodeTransportCatalogue(
+          document.GetRoot().AsDict().at("base_requests"), catalogue);
+      ProcessNodeRenderSettings(
+          document.GetRoot().AsDict().at("render_settings"), render_settings);
+      ProcessNodeRoutingSettings(
+          document.GetRoot().AsDict().at("routing_settings"), routing_settings);
       ProcessNodeSerializationSettings(
-          root_dictionary.at("serialization_settings"), serialization_settings);
-
+          document.GetRoot().AsDict().at("serialization_settings"),
+          serialization_settings);
     } catch (...) {
+      std::cout << "unable to parse root" << std::endl;
     }
 
   } else {
-    std::cout << "root is not map";
+    std::cout << "root is not map" << std::endl;
   }
 }
 
 void Parser::ProcessRequests(
     std::vector<StatisticRequest> &stat_request,
     serialization::SerializationSettings &serialization_settings) {
-  Dict root_dictionary;
-
   if (document.GetRoot().IsDict()) {
-    root_dictionary = document.GetRoot().AsDict();
-
     try {
-      ProcessNodeStatisticRequest(root_dictionary.at("stat_requests"),
-                                  stat_request);
-
-    } catch (...) {
-    }
-
-    try {
+      ProcessNodeStatisticRequest(
+          document.GetRoot().AsDict().at("stat_requests"), stat_request);
       ProcessNodeSerializationSettings(
-          root_dictionary.at("serialization_settings"), serialization_settings);
+          document.GetRoot().AsDict().at("serialization_settings"),
+          serialization_settings);
 
     } catch (...) {
+      std::cout << "unable to parse root" << std::endl;
     }
 
   } else {
-    std::cout << "root is not map";
+    std::cout << "root is not map" << std::endl;
   }
 }
 
