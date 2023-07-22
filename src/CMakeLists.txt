@@ -5,10 +5,10 @@ project(transport_catalogue VERSION 0.0.1 DESCRIPTION "Transport catalogue")
 find_package(Protobuf REQUIRED)
 find_package(Threads REQUIRED)
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS catalogue.proto svg.proto renderer.proto graph.proto router.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS catalogue.proto svg.proto renderer.proto router.proto)
 
 set(GEO geo/geo.h geo/geo.cpp)
-set(GRAPH graph/graph.h graph/router.h graph/ranges.h graph.proto)
+set(GRAPH graph/graph.h graph/router.h graph/ranges.h)
 set(SVG svg/svg.h svg/svg.cpp svg.proto)
 set(JSON json/json.h json/json.cpp json/builder.h json/builder.cpp)
 set(CATALOGUE domain.h catalogue.h catalogue.cpp reader.h reader.cpp catalogue.proto)
