@@ -7,17 +7,10 @@ Parser::Parser(Document doc) : document(std::move(doc)) {}
 Parser::Parser(std::istream &input) : document(json::Load(input)) {}
 
 Stop Parser::ProcessNodeStop(Node &node) {
-  Stop stop;
-  Dict stop_node;
-
-  if (node.IsDict()) {
-    stop_node = node.AsDict();
-    stop.name = stop_node.at("name").AsString();
-    stop.latitude = stop_node.at("latitude").AsDouble();
-    stop.longitude = stop_node.at("longitude").AsDouble();
-  }
-
-  return stop;
+  return node.IsDict() ? Stop{node.AsDict().at("name").AsString(),
+                              node.AsDict().at("latitude").AsDouble(),
+                              node.AsDict().at("longitude").AsDouble()}
+                        : Stop();
 }
 
 std::vector<Distance> Parser::ProcessNodeDistances(
