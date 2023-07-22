@@ -10,6 +10,18 @@
 
 namespace domain {
 
+struct RoutingSettings;
+struct RouteInfo;
+struct BusInfo;
+struct StopInfo;
+struct StatisticRequest;
+struct Bus;
+struct Stop;
+struct Distance;
+struct RouterStop;
+struct StopEdge;
+struct BusEdge;
+
 struct StatisticRequest {
   int id;
   std::string type;
@@ -18,13 +30,10 @@ struct StatisticRequest {
   std::string to;
 };
 
-struct Bus;
-
 struct Stop {
   std::string name;
   double latitude;
   double longitude;
-
   std::vector<Bus *> buses;
 };
 
