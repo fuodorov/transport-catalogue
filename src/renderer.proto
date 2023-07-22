@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "svg.proto";
 
-package transport_catalogue_protobuf;
+package transport_catalogue_model;
 
 message RenderSettings {
     double width_ = 1;

@@ -3,7 +3,7 @@ syntax = "proto3";
 import "renderer.proto";
 import "router.proto";
 
-package transport_catalogue_protobuf;
+package transport_catalogue_model;
 
 message Stop {
     uint32 id = 1;

@@ -25,27 +25,24 @@ struct Catalogue {
 template <typename It>
 uint32_t CalcId(It start, It end, std::string_view name);
 
-transport_catalogue_protobuf::TransportCatalogue
-TransportCatalogueSerialization(
+transport_catalogue_model::TransportCatalogue TransportCatalogueSerialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue);
 transport_catalogue::TransportCatalogue TransportCatalogueDeserialization(
-    const transport_catalogue_protobuf::TransportCatalogue
+    const transport_catalogue_model::TransportCatalogue
         &transport_catalogue_proto);
 
-transport_catalogue_protobuf::Color ColorSerialization(
-    const svg::Color &tc_color);
+transport_catalogue_model::Color ColorSerialization(const svg::Color &tc_color);
 svg::Color ColorDeserialization(
-    const transport_catalogue_protobuf::Color &color_proto);
-transport_catalogue_protobuf::RenderSettings RenderSettingsSerialization(
+    const transport_catalogue_model::Color &color_proto);
+transport_catalogue_model::RenderSettings RenderSettingsSerialization(
     const renderer::RenderSettings &render_settings);
 renderer::RenderSettings RenderSettingsDeserialization(
-    const transport_catalogue_protobuf::RenderSettings &render_settings_proto);
+    const transport_catalogue_model::RenderSettings &render_settings_proto);
 
-transport_catalogue_protobuf::RoutingSettings RoutingSettingsSerialization(
+transport_catalogue_model::RoutingSettings RoutingSettingsSerialization(
     const domain::RoutingSettings &routing_settings);
 domain::RoutingSettings RoutingSettingsDeserialization(
-    const transport_catalogue_protobuf::RoutingSettings
-        &routing_settings_proto);
+    const transport_catalogue_model::RoutingSettings &routing_settings_proto);
 
 void CatalogueSerialization(
     const transport_catalogue::TransportCatalogue &transport_catalogue,

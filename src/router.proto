@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package transport_catalogue_protobuf;
+package transport_catalogue_model;
 
 message RoutingSettings {
     uint32 bus_wait_time = 1;

@@ -153,8 +153,7 @@ void MapRenderer::AddLine(std::vector<std::pair<Bus *, int>> &palettes) {
   }
 }
 
-void MapRenderer::AddBusesName(
-    std::vector<std::pair<Bus *, int>> &palettes) {
+void MapRenderer::AddBusesName(std::vector<std::pair<Bus *, int>> &palettes) {
   std::vector<geo::Coordinates> coordinates;
   bool is_empty = true;
 
@@ -174,9 +173,8 @@ void MapRenderer::AddBusesName(
                                          sphere_projector(coordinates[0]));
         map_svg.Add(name_is_round_trip);
 
-        SetRouteTextColorProperties(title_is_round_trip,
-                                    std::string(bus->name), palette,
-                                    sphere_projector(coordinates[0]));
+        SetRouteTextColorProperties(title_is_round_trip, std::string(bus->name),
+                                    palette, sphere_projector(coordinates[0]));
         map_svg.Add(title_is_round_trip);
 
       } else {
@@ -185,13 +183,11 @@ void MapRenderer::AddBusesName(
                                          sphere_projector(coordinates[0]));
         map_svg.Add(name_is_round_trip);
 
-        SetRouteTextColorProperties(title_is_round_trip,
-                                    std::string(bus->name), palette,
-                                    sphere_projector(coordinates[0]));
+        SetRouteTextColorProperties(title_is_round_trip, std::string(bus->name),
+                                    palette, sphere_projector(coordinates[0]));
         map_svg.Add(title_is_round_trip);
 
-        if (coordinates[0] !=
-            coordinates[coordinates.size() / 2]) {
+        if (coordinates[0] != coordinates[coordinates.size() / 2]) {
           SetRouteTextAdditionalProperties(
               name_is_not_round_trip, std::string(bus->name),
               sphere_projector(coordinates[coordinates.size() / 2]));
@@ -216,9 +212,8 @@ void MapRenderer::AddStopsCircle(std::vector<Stop *> &stops) {
 
   for (Stop *stop : stops) {
     if (stop) {
-      SetStopsCirclesProperties(icon,
-                                sphere_projector({stop->latitude,
-                                                  stop->longitude}));
+      SetStopsCirclesProperties(
+          icon, sphere_projector({stop->latitude, stop->longitude}));
       map_svg.Add(icon);
     }
   }
@@ -236,8 +231,9 @@ void MapRenderer::AddStopsName(std::vector<Stop *> &stops) {
 
       map_svg.Add(name);
 
-      SetStopsTextColorProperties(title, stop->name,
-                                  sphere_projector({stop->latitude, stop->longitude}));
+      SetStopsTextColorProperties(
+          title, stop->name,
+          sphere_projector({stop->latitude, stop->longitude}));
       map_svg.Add(title);
     }
   }
