@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
-
+set(CMAKE_CXX_STANDARD 17)
 project(transport_catalogue VERSION 0.0.1 DESCRIPTION "Transport catalogue")
 
-set(CMAKE_CXX_STANDARD 17)
-
 find_package(Protobuf REQUIRED)
-
 find_package(Threads REQUIRED)
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS catalogue.proto svg.proto renderer.proto graph.proto router.proto)
@@ -24,5 +21,4 @@ add_executable(transport_catalogue main.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${GEO} $
 
 target_include_directories(transport_catalogue PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_include_directories(transport_catalogue PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-
 target_link_libraries(transport_catalogue "$<IF:$<CONFIG:Debug>,${Protobuf_LIBRARY_DEBUG},${Protobuf_LIBRARY}>" Threads::Threads)
