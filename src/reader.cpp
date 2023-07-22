@@ -63,33 +63,21 @@ Bus Parser::ProcessNodeBus(Node &node, TransportCatalogue &catalogue) {
 
 void Parser::ProcessNodeTransportCatalogue(const Node &root,
                                            TransportCatalogue &catalogue) {
-  Array base_requests;
-  Dict req_map;
-  Node req_node;
-
-  std::vector<Node> buses;
-  std::vector<Node> stops;
+  std::vector<Node> buses, stops;
 
   if (root.IsArray()) {
-    base_requests = root.AsArray();
-
-    for (Node &node : base_requests) {
+    for (Node node : root.AsArray()) {
       if (node.IsDict()) {
-        req_map = node.AsDict();
-
         try {
-          req_node = req_map.at("type");
-
-          if (req_node.IsString()) {
-            if (req_node.AsString() == "Bus") {
-              buses.push_back(req_map);
-            } else if (req_node.AsString() == "Stop") {
-              stops.push_back(req_map);
+          if (node.AsDict().at("type").IsString()) {
+            if (node.AsDict().at("type").AsString() == "Bus") {
+              buses.push_back(node.AsDict());
+            } else if (node.AsDict().at("type").AsString() == "Stop") {
+              stops.push_back(node.AsDict());
             } else {
               std::cout << "base_requests are invalid" << std::endl;
             }
           }
-
         } catch (...) {
           std::cout << "base_requests does not have type value" << std::endl;
         }
@@ -115,37 +103,33 @@ void Parser::ProcessNodeTransportCatalogue(const Node &root,
 
 void Parser::ProcessNodeStatisticRequest(
     const Node &node, std::vector<StatisticRequest> &stat_request) {
-  Array stat_requests;
-  Dict req_map;
-  StatisticRequest req;
+  StatisticRequest tmp_stat_request;
 
   if (node.IsArray()) {
-    stat_requests = node.AsArray();
+    for (Node tmp_node : node.AsArray()) {
+      if (tmp_node.IsDict()) {
+        tmp_stat_request.id = tmp_node.AsDict().at("id").AsInt();
+        tmp_stat_request.type = tmp_node.AsDict().at("type").AsString();
 
-    for (Node req_node : stat_requests) {
-      if (req_node.IsDict()) {
-        req_map = req_node.AsDict();
-        req.id = req_map.at("id").AsInt();
-        req.type = req_map.at("type").AsString();
-
-        if ((req.type == "Bus") || (req.type == "Stop")) {
-          req.name = req_map.at("name").AsString();
-          req.from = "";
-          req.to = "";
+        if ((tmp_stat_request.type == "Bus") ||
+            (tmp_stat_request.type == "Stop")) {
+          tmp_stat_request.name = tmp_node.AsDict().at("name").AsString();
+          tmp_stat_request.from = "";
+          tmp_stat_request.to = "";
 
         } else {
-          req.name = "";
-          if (req.type == "Route") {
-            req.from = req_map.at("from").AsString();
-            req.to = req_map.at("to").AsString();
+          tmp_stat_request.name = "";
+          if (tmp_stat_request.type == "Route") {
+            tmp_stat_request.from = tmp_node.AsDict().at("from").AsString();
+            tmp_stat_request.to = tmp_node.AsDict().at("to").AsString();
 
           } else {
-            req.from = "";
-            req.to = "";
+            tmp_stat_request.from = "";
+            tmp_stat_request.to = "";
           }
         }
 
-        stat_request.push_back(req);
+        stat_request.push_back(tmp_stat_request);
       }
     }
 
