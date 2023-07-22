@@ -175,7 +175,7 @@ void Handler::Queries(TransportCatalogue &catalogue,
 
 void Handler::RenderMap(MapRenderer &map_catalogue,
                         TransportCatalogue &catalogue) const {
-  std::vector<std::pair<Bus *, int>> buses_palette;
+  std::vector<std::pair<Bus *, int>> palettes;
   std::vector<Stop *> tmp_stops;
   int size = map_catalogue.GetPaletteSize();
   int id = 0;
@@ -191,7 +191,7 @@ void Handler::RenderMap(MapRenderer &map_catalogue,
       Bus *bus = catalogue.GetBus(name);
 
       if (bus && bus->stops.size() > 0) {
-        buses_palette.push_back(std::make_pair(bus, id));
+        palettes.push_back(std::make_pair(bus, id));
         id++;
 
         if (id == size) {
@@ -200,9 +200,9 @@ void Handler::RenderMap(MapRenderer &map_catalogue,
       }
     }
 
-    if (buses_palette.size() > 0) {
-      map_catalogue.AddLine(buses_palette);
-      map_catalogue.AddBusesName(buses_palette);
+    if (palettes.size() > 0) {
+      map_catalogue.AddLine(palettes);
+      map_catalogue.AddBusesName(palettes);
     }
   }
 

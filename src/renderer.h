@@ -13,6 +13,11 @@ using namespace domain;
 namespace renderer {
 
 inline const double EPSILON = 1e-6;
+inline const char *VERDANA_FONT_FAMILY = "Verdana";
+inline const char *BLACK_FILL_COLOR = "black";
+inline const char *WHITE_FILL_COLOR = "white";
+inline const char *NONE_FILL_COLOR = "none";
+inline const char *BOLD_FONT_WEIGHT = "bold";
 
 class SphereProjector {
  public:
@@ -26,9 +31,9 @@ class SphereProjector {
 
  private:
   double padding_;
-  double min_lon_ = 0;
-  double max_lat_ = 0;
-  double zoom_coeff_ = 0;
+  double min_longitude_ = 0;
+  double max_latitude_ = 0;
+  double zoom_coeffIcient_ = 0;
 
   bool is_zero(double value);
 };
@@ -81,8 +86,8 @@ class MapRenderer {
   void SetStopsTextColorProperties(svg::Text &text, const std::string &name,
                                    svg::Point position) const;
 
-  void AddLine(std::vector<std::pair<Bus *, int>> &buses_palette);
-  void AddBusesName(std::vector<std::pair<Bus *, int>> &buses_palette);
+  void AddLine(std::vector<std::pair<Bus *, int>> &palettes);
+  void AddBusesName(std::vector<std::pair<Bus *, int>> &palettes);
   void AddStopsCircle(std::vector<Stop *> &stops_name);
   void AddStopsName(std::vector<Stop *> &stops_name);
 
@@ -107,7 +112,7 @@ SphereProjector::SphereProjector(InputIt points_begin, InputIt points_end,
       points_begin, points_end,
       [](auto lhs, auto rhs) { return lhs.longitude < rhs.longitude; });
 
-  min_lon_ = left_it->longitude;
+  min_longitude_ = left_it->longitude;
   const double max_lon = right_it->longitude;
 
   const auto [bottom_it, top_it] = std::minmax_element(
@@ -115,25 +120,25 @@ SphereProjector::SphereProjector(InputIt points_begin, InputIt points_end,
       [](auto lhs, auto rhs) { return lhs.latitude < rhs.latitude; });
 
   const double min_lat = bottom_it->latitude;
-  max_lat_ = top_it->latitude;
+  max_latitude_ = top_it->latitude;
 
   std::optional<double> width_zoom;
-  if (!is_zero(max_lon - min_lon_)) {
-    width_zoom = (max_width - 2 * padding) / (max_lon - min_lon_);
+  if (!is_zero(max_lon - min_longitude_)) {
+    width_zoom = (max_width - 2 * padding) / (max_lon - min_longitude_);
   }
 
   std::optional<double> height_zoom;
-  if (!is_zero(max_lat_ - min_lat)) {
-    height_zoom = (max_height - 2 * padding) / (max_lat_ - min_lat);
+  if (!is_zero(max_latitude_ - min_lat)) {
+    height_zoom = (max_height - 2 * padding) / (max_latitude_ - min_lat);
   }
 
   if (width_zoom && height_zoom) {
-    zoom_coeff_ = std::min(*width_zoom, *height_zoom);
+    zoom_coeffIcient_ = std::min(*width_zoom, *height_zoom);
   } else if (width_zoom) {
-    zoom_coeff_ = *width_zoom;
+    zoom_coeffIcient_ = *width_zoom;
 
   } else if (height_zoom) {
-    zoom_coeff_ = *height_zoom;
+    zoom_coeffIcient_ = *height_zoom;
   }
 }
 
