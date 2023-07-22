@@ -38,28 +38,22 @@ class TransportCatalogue {
 
   Bus *GetBus(std::string_view bus_name);
   Stop *GetStop(std::string_view stop_name);
-
   std::deque<Stop> GetStops() const;
   std::deque<Bus> GetBuses() const;
-
   BusesMap GetBusNames() const;
   StopsMap GetStopNames() const;
-
   std::unordered_set<const Bus *> GetUniqueBuses(Stop *stop);
   std::unordered_set<const Stop *> GetUniqueStops(Bus *bus);
   double GetLength(Bus *bus);
-
   DistancesMap GetDistance() const;
   size_t GetDistanceStops(const Stop *start, const Stop *finish) const;
   size_t GetDistanceBuses(Bus *bus);
 
  private:
   std::deque<Stop> stops;
-  StopsMap stop_names_to_stop;
-
   std::deque<Bus> buses;
-  BusesMap bus_names_to_bus;
-
+  StopsMap stops_to_stop;
+  BusesMap buses_to_bus;
   DistancesMap distances_to_stop;
 };
 
