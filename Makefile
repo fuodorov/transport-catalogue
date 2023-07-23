@@ -16,7 +16,7 @@ deps: ## install dependencies
 
 run: ## run
 	./build/transport_catalogue make_base < data/input/make_base.json
-	./build/transport_catalogue process_requests < data/input/process_requests.json > data/output/process_requests.json
+	./build/transport_catalogue process_requests < data/input/process_requests.json
 
 help: ## Show help message
 	@grep -E '^[a-zA-Z0-9 -]+:.*#'  Makefile | sort | while read -r l; do printf "\033[1;32m$$(echo $$l | cut -f 1 -d':')\033[00m:$$(echo $$l | cut -f 2- -d'#')\n"; done

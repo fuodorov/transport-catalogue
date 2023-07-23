@@ -1,5 +1,7 @@
 #include "handler.h"
 
+#include "log/easylogging++.h"
+
 namespace handler {
 
 struct Edge {
@@ -155,17 +157,22 @@ void Handler::Queries(TransportCatalogue &catalogue,
   router.SetRoutingSettings(routing_settings);
   router.BuildRouter(catalogue);
 
+  LOG(DEBUG) << "Start queries";
   for (StatisticRequest req : stat_requests) {
     if (req.type == "Stop") {
+      LOG(DEBUG) << "Stop " << req.name << " " << req.id;
       result.push_back(MakeStopNode(req.id, StopQuery(catalogue, req.name)));
 
     } else if (req.type == "Bus") {
+      LOG(DEBUG) << "Bus " << req.name << " " << req.id;
       result.push_back(MakeBusNode(req.id, BusQuery(catalogue, req.name)));
 
     } else if (req.type == "Map") {
+      LOG(DEBUG) << "Map " << req.id;
       result.push_back(MakeMapNode(req.id, catalogue, render_settings));
 
     } else if (req.type == "Route") {
+      LOG(DEBUG) << "Route " << req.from << " to " << req.to << " " << req.id;
       result.push_back(MakeRouteNode(req, catalogue, router));
     }
   }
@@ -281,7 +288,7 @@ BusInfo Handler::BusQuery(TransportCatalogue &catalogue,
     info.name = name;
     info.not_found = true;
   }
-
+  LOG(DEBUG) << "Bus Query " << info.name << " " << info.not_found;
   return info;
 }
 
@@ -308,7 +315,7 @@ StopInfo Handler::StopQuery(TransportCatalogue &catalogue,
     info.name = name;
     info.not_found = true;
   }
-
+  LOG(DEBUG) << "Stop Query " << info.name << " " << info.not_found;
   return info;
 }
 

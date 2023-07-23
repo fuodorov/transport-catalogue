@@ -2,7 +2,7 @@
 
 namespace renderer {
 
-bool SphereProjector::is_zero(double value) {
+bool SphereProjector::IsLessEpsilon(double value) {
   return std::abs(value) < EPSILON;
 }
 

@@ -35,7 +35,7 @@ class SphereProjector {
   double max_latitude_ = 0;
   double zoom_coeffIcient_ = 0;
 
-  bool is_zero(double value);
+  bool IsLessEpsilon(double value);
 };
 
 struct RenderSettings {
@@ -123,12 +123,12 @@ SphereProjector::SphereProjector(InputIt points_begin, InputIt points_end,
   max_latitude_ = top_it->latitude;
 
   std::optional<double> width_zoom;
-  if (!is_zero(max_lon - min_longitude_)) {
+  if (!IsLessEpsilon(max_lon - min_longitude_)) {
     width_zoom = (max_width - 2 * padding) / (max_lon - min_longitude_);
   }
 
   std::optional<double> height_zoom;
-  if (!is_zero(max_latitude_ - min_lat)) {
+  if (!IsLessEpsilon(max_latitude_ - min_lat)) {
     height_zoom = (max_height - 2 * padding) / (max_latitude_ - min_lat);
   }
 

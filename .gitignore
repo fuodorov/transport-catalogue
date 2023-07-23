@@ -1,8 +1,11 @@
 # Build products
 build/
 
-# Db
+# Logs and databases
 *.db
+*.sqlite
+*.sqlite3
+*.log
 
 # Prerequisites
 *.d

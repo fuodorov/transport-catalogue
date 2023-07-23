@@ -1,5 +1,7 @@
 #include "router.h"
 
+#include "log/easylogging++.h"
+
 namespace transport_catalogue::router {
 
 void TransportRouter::SetRoutingSettings(RoutingSettings routing_settings) {
@@ -130,7 +132,8 @@ Edge<double> TransportRouter::MakeEdgeBus(Stop *start, Stop *end,
   result.from = stop_to_router_.at(start).bus_wait_end;
   result.to = stop_to_router_.at(end).bus_wait_start;
   result.weight = distance * 1.0 / (routing_settings_.bus_velocity * KM / HR);
-
+  LOG(DEBUG) << "Make edge for bus " << start->name << " to " << end->name
+             << " with weight " << result.weight;
   return result;
 }
 

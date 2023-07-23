@@ -16,8 +16,9 @@ set(HANDLER handler.h handler.cpp)
 set(ROUTER router.h router.cpp router.proto)
 set(RENDERER renderer.h renderer.cpp renderer.proto)
 set(SERIALIZER serializer.h serializer.cpp)
+set(LOG log/easylogging++.h log/easylogging++.cc)
 
-add_executable(transport_catalogue main.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${GEO} ${GRAPH} ${CATALOGUE} ${ROUTER} ${JSON} ${SVG} ${RENDERER} ${SERIALIZER} ${HANDLER})
+add_executable(transport_catalogue main.cpp ${PROTO_SRCS} ${PROTO_HDRS} ${GEO} ${GRAPH} ${CATALOGUE} ${ROUTER} ${JSON} ${SVG} ${RENDERER} ${SERIALIZER} ${HANDLER} ${LOG})
 
 target_include_directories(transport_catalogue PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_include_directories(transport_catalogue PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
