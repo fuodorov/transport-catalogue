@@ -19,16 +19,16 @@ message Bus {
     uint32 route_length = 4;
 }
 
-message Distance {
-    uint32 start = 1;
-    uint32 end = 2;
+message DistanceBetweenStops {
+    uint32 from = 1;
+    uint32 to = 2;
     uint32 distance = 3;
 }
 
 message TransportCatalogue {
     repeated Stop stops = 1;
     repeated Bus buses = 2;
-    repeated Distance distances = 3;
+    repeated DistanceBetweenStops distances = 3;
 }
 
 message Catalogue {

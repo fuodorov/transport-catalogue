@@ -49,12 +49,12 @@ transport_catalogue_model::TransportCatalogue TransportCatalogueSerialization(
   }
 
   for (const auto &[stops_pair, pair_distance] : distances) {
-    transport_catalogue_model::Distance distance_model;
+    transport_catalogue_model::DistanceBetweenStops distance_model;
 
-    distance_model.set_start(
+    distance_model.set_from(
         CalcId(stops.cbegin(), stops.cend(), stops_pair.first->name));
 
-    distance_model.set_end(
+    distance_model.set_to(
         CalcId(stops.cbegin(), stops.cend(), stops_pair.second->name));
 
     distance_model.set_distance(pair_distance);
@@ -91,9 +91,9 @@ transport_catalogue::TransportCatalogue TransportCatalogueDeserialization(
     domain::Distance tmp_distance;
 
     tmp_distance.start =
-        transport_catalogue.GetStop(tmp_stops[distance.start()].name);
+        transport_catalogue.GetStop(tmp_stops[distance.from()].name);
     tmp_distance.end =
-        transport_catalogue.GetStop(tmp_stops[distance.end()].name);
+        transport_catalogue.GetStop(tmp_stops[distance.to()].name);
 
     tmp_distance.distance = distance.distance();
 
@@ -144,7 +144,7 @@ transport_catalogue_model::Color ColorSerialization(
     color_model.mutable_rgba()->set_opacity(rgba.opacity);
 
   } else if (std::holds_alternative<std::string>(tmp_color)) {
-    color_model.set_string_color(std::get<std::string>(tmp_color));
+    color_model.set_name(std::get<std::string>(tmp_color));
   }
 
   return color_model;
@@ -174,7 +174,7 @@ svg::Color ColorDeserialization(
     color = rgba;
 
   } else {
-    color = color_model.string_color();
+    color = color_model.name();
   }
 
   return color;
@@ -184,38 +184,38 @@ transport_catalogue_model::RenderSettings RenderSettingsSerialization(
     const renderer::RenderSettings &render_settings) {
   transport_catalogue_model::RenderSettings render_settings_model;
 
-  render_settings_model.set_width_(render_settings.width_);
-  render_settings_model.set_height_(render_settings.height_);
-  render_settings_model.set_padding_(render_settings.padding_);
-  render_settings_model.set_line_width_(render_settings.line_width_);
-  render_settings_model.set_stop_radius_(render_settings.stop_radius_);
-  render_settings_model.set_bus_label_font_size_(
+  render_settings_model.set_width(render_settings.width_);
+  render_settings_model.set_height(render_settings.height_);
+  render_settings_model.set_padding(render_settings.padding_);
+  render_settings_model.set_line_width(render_settings.line_width_);
+  render_settings_model.set_stop_radius(render_settings.stop_radius_);
+  render_settings_model.set_bus_label_font_size(
       render_settings.bus_label_font_size_);
 
   transport_catalogue_model::Point bus_label_offset_proto;
   bus_label_offset_proto.set_x(render_settings.bus_label_offset_.first);
   bus_label_offset_proto.set_y(render_settings.bus_label_offset_.second);
 
-  *render_settings_model.mutable_bus_label_offset_() =
+  *render_settings_model.mutable_bus_label_offset() =
       std::move(bus_label_offset_proto);
 
-  render_settings_model.set_stop_label_font_size_(
+  render_settings_model.set_stop_label_font_size(
       render_settings.stop_label_font_size_);
 
   transport_catalogue_model::Point stop_label_offset_proto;
   stop_label_offset_proto.set_x(render_settings.stop_label_offset_.first);
   stop_label_offset_proto.set_y(render_settings.stop_label_offset_.second);
 
-  *render_settings_model.mutable_stop_label_offset_() =
+  *render_settings_model.mutable_stop_label_offset() =
       std::move(stop_label_offset_proto);
-  *render_settings_model.mutable_underlayer_color_() =
+  *render_settings_model.mutable_underlayer_color() =
       std::move(ColorSerialization(render_settings.underlayer_color_));
-  render_settings_model.set_underlayer_width_(
+  render_settings_model.set_underlayer_width(
       render_settings.underlayer_width_);
 
   const auto &colors = render_settings.color_palette_;
   for (const auto &color : colors) {
-    *render_settings_model.add_color_palette_() =
+    *render_settings_model.add_color_palette() =
         std::move(ColorSerialization(color));
   }
 
@@ -226,32 +226,32 @@ renderer::RenderSettings RenderSettingsDeserialization(
     const transport_catalogue_model::RenderSettings &render_settings_model) {
   renderer::RenderSettings render_settings;
 
-  render_settings.width_ = render_settings_model.width_();
-  render_settings.height_ = render_settings_model.height_();
-  render_settings.padding_ = render_settings_model.padding_();
-  render_settings.line_width_ = render_settings_model.line_width_();
-  render_settings.stop_radius_ = render_settings_model.stop_radius_();
+  render_settings.width_ = render_settings_model.width();
+  render_settings.height_ = render_settings_model.height();
+  render_settings.padding_ = render_settings_model.padding();
+  render_settings.line_width_ = render_settings_model.line_width();
+  render_settings.stop_radius_ = render_settings_model.stop_radius();
   render_settings.bus_label_font_size_ =
-      render_settings_model.bus_label_font_size_();
+      render_settings_model.bus_label_font_size();
 
   render_settings.bus_label_offset_.first =
-      render_settings_model.bus_label_offset_().x();
+      render_settings_model.bus_label_offset().x();
   render_settings.bus_label_offset_.second =
-      render_settings_model.bus_label_offset_().y();
+      render_settings_model.bus_label_offset().y();
 
   render_settings.stop_label_font_size_ =
-      render_settings_model.stop_label_font_size_();
+      render_settings_model.stop_label_font_size();
 
   render_settings.stop_label_offset_.first =
-      render_settings_model.stop_label_offset_().x();
+      render_settings_model.stop_label_offset().x();
   render_settings.stop_label_offset_.second =
-      render_settings_model.stop_label_offset_().y();
+      render_settings_model.stop_label_offset().y();
 
   render_settings.underlayer_color_ =
-      ColorDeserialization(render_settings_model.underlayer_color_());
-  render_settings.underlayer_width_ = render_settings_model.underlayer_width_();
+      ColorDeserialization(render_settings_model.underlayer_color());
+  render_settings.underlayer_width_ = render_settings_model.underlayer_width();
 
-  for (const auto &color_model : render_settings_model.color_palette_()) {
+  for (const auto &color_model : render_settings_model.color_palette()) {
     render_settings.color_palette_.push_back(ColorDeserialization(color_model));
   }
 

@@ -24,8 +24,7 @@ message Color {
     oneof colors {
         Rgb rgb = 1;
         Rgba rgba = 2;
-        string string_color = 3;
-        
+        string name = 3;
         bool none = 4;
     }
 }

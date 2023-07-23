@@ -5,16 +5,16 @@ import "svg.proto";
 package transport_catalogue_model;
 
 message RenderSettings {
-    double width_ = 1;
-    double height_ = 2;
-    double padding_ = 3;
-    double line_width_ = 4;
-    double stop_radius_ = 5;
-    uint32 bus_label_font_size_ = 6;
-    Point bus_label_offset_ = 7;
-    uint32 stop_label_font_size_ = 8;
-    Point stop_label_offset_ = 9;
-    Color underlayer_color_ = 10;
-    double underlayer_width_ = 11;
-    repeated Color color_palette_ = 12;
+    double width = 1;
+    double height = 2;
+    double padding = 3;
+    double line_width = 4;
+    double stop_radius = 5;
+    uint32 bus_label_font_size = 6;
+    Point bus_label_offset = 7;
+    uint32 stop_label_font_size = 8;
+    Point stop_label_offset = 9;
+    Color underlayer_color = 10;
+    double underlayer_width = 11;
+    repeated Color color_palette = 12;
 }
