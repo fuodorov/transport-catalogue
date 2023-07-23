@@ -27,12 +27,10 @@ int main(int argc, char *argv[]) {
   RenderSettings render_settings;
   RoutingSettings routing_settings;
   SerializationSettings serialization_settings;
-  Parser json_parser;
   vector<StatisticRequest> stat_request;
 
   if (mode == "make_base"sv) {
-    json_parser = Parser(cin);
-    json_parser.ProcessTransportCatalogue(transport_catalogue, render_settings,
+    Parser(cin).ProcessTransportCatalogue(transport_catalogue, render_settings,
                                           routing_settings,
                                           serialization_settings);
     ofstream file(serialization_settings.file_name, ios::binary);
@@ -40,8 +38,7 @@ int main(int argc, char *argv[]) {
                            routing_settings, file);
 
   } else if (mode == "process_requests"sv) {
-    json_parser = Parser(cin);
-    json_parser.ProcessRequests(stat_request, serialization_settings);
+    Parser(cin).ProcessRequests(stat_request, serialization_settings);
     ifstream file(serialization_settings.file_name, ios::binary);
     Catalogue catalogue = CatalogueDeserialization(file);
     Handler handler;

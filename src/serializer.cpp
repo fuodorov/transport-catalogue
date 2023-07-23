@@ -210,8 +210,7 @@ transport_catalogue_model::RenderSettings RenderSettingsSerialization(
       std::move(stop_label_offset_proto);
   *render_settings_model.mutable_underlayer_color() =
       std::move(ColorSerialization(render_settings.underlayer_color_));
-  render_settings_model.set_underlayer_width(
-      render_settings.underlayer_width_);
+  render_settings_model.set_underlayer_width(render_settings.underlayer_width_);
 
   const auto &colors = render_settings.color_palette_;
   for (const auto &color : colors) {
