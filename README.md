@@ -1,21 +1,17 @@
-# Транспортный справочник
+# Transport Catalogue
 
-Финальный проект: транспортный справочник
+## Build and launch
 
-## Сборка и запуск
-
-Для сборки нашего приложения и создания Docker-образа достаточно будет выполнить следующую команду:
+To build our application and create a Docker image, it will be enough to run the following command:
 
 `docker build -t transport_catalogue .`
 
-Для запуска приложения используем команду:
+To launch the application, use the command:
 
 `docker run -it transport_catalogue`
 
-## Двухстадийность в траспортном справочнике
+## ## Two-stage in the transport directory
 
-* `make_base` - создание базы транспортного справочника по запросам `base_requests` и её сериализация в файл.
+* `make_base` - creation of a transport directory database based on `base_requests` queries and its serialization into a file.
 
-* `process_requests` - десериализация базы из файла и использование её для ответов на запросы `stat_requests`.
-
-*В папке `data` - примеры входных файлов и корректных выводов для них.*
+* `process_requests` - deserializing the database from a file and using it to respond to `stat_requests` requests.
