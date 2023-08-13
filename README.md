@@ -1,6 +1,6 @@
 # Transport Catalogue
 
-Transport Catalogue project supports graphical output, route search and trip time calculation.
+Transport catalogue project supports graphical output, route search and trip time calculation.
 
 ## Build and launch
 
